@@ -1,0 +1,53 @@
+{
+  "updated": "2026-09-07",
+  "majors": [
+    {
+      "id": "printing",
+      "name": "数字印刷/印刷工程",
+      "keywords": ["印刷", "数码印刷", "包装印刷", "印前", "色彩管理"],
+      "defaultSkills": ["数码印刷原理", "Illustrator", "Photoshop", "色彩管理基础", "印前文件检查"],
+      "relatedCompanies": ["pulisi", "yuto", "zrp", "jinjia", "avery", "artron", "hexing", "donnelley", "candc", "lfyg"]
+    },
+    {
+      "id": "packaging",
+      "name": "包装工程/包装设计",
+      "keywords": ["包装", "结构设计", "包装材料", "纸包装", "标签"],
+      "defaultSkills": ["包装结构", "Illustrator", "Photoshop", "材料工艺", "打样验证"],
+      "relatedCompanies": ["yuto", "zrp", "jinjia", "hexing", "mys", "org", "amcor", "ccl", "gz-design"]
+    },
+    {
+      "id": "design",
+      "name": "视觉传达/平面设计",
+      "keywords": ["设计", "平面设计", "品牌", "广告", "UI"],
+      "defaultSkills": ["Illustrator", "Photoshop", "InDesign", "C4D", "作品集"],
+      "relatedCompanies": ["gz-design", "artron", "zrp", "jinjia", "yuto", "jihong"]
+    },
+    {
+      "id": "newmedia",
+      "name": "数字媒体/新媒体",
+      "keywords": ["新媒体", "短视频", "运营", "内容", "传播"],
+      "defaultSkills": ["短视频拍摄剪辑", "剪映/PR", "账号运营", "文案", "数据分析"],
+      "relatedCompanies": ["newmedia", "jihong", "tianyi", "pulisi"]
+    },
+    {
+      "id": "ecommerce",
+      "name": "电子商务/国际贸易",
+      "keywords": ["电商", "外贸", "跨境", "英语", "日语"],
+      "defaultSkills": ["英语", "外贸单证", "客户沟通", "Excel", "电商平台"],
+      "relatedCompanies": ["waimao", "jihong", "hsg", "yuto", "lfyg"]
+    },
+    {
+      "id": "other",
+      "name": "其他专业（通用）",
+      "keywords": ["通用"],
+      "defaultSkills": ["Office办公", "沟通协作", "学习能力"],
+      "relatedCompanies": ["yuto", "zrp", "hexing", "mys", "donnelley"]
+    }
+  ],
+  "grades": [
+    { "id": "1", "label": "大一" },
+    { "id": "2", "label": "大二" },
+    { "id": "3", "label": "大三（实习准备期）" },
+    { "id": "4", "label": "大四（秋招冲刺）" }
+  ]
+}

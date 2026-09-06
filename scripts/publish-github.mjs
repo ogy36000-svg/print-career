@@ -54,7 +54,23 @@ const created = await api("/user/repos", {
 });
 console.log(created.status === 201 ? `已创建仓库 ${user.login}/${repoName}` : `仓库已存在，直接更新`);
 
-// 2. 上传所有文件为 blob
+// 2. 空仓库需先用 Contents API 初始化，否则 Git Data API 会 409
+let parentSha;
+try {
+  const ref = (await api(`/repos/${user.login}/${repoName}/git/ref/heads/main`)).body;
+  parentSha = ref.object?.sha;
+} catch {
+  const readme = readFileSync(join(ROOT, "README.md"));
+  await api(`/repos/${user.login}/${repoName}/contents/README.md`, {
+    method: "PUT",
+    body: JSON.stringify({ message: "init", content: readme.toString("base64") }),
+  });
+  const ref = (await api(`/repos/${user.login}/${repoName}/git/ref/heads/main`)).body;
+  parentSha = ref.object?.sha;
+  console.log("空仓库已初始化");
+}
+
+// 3. 上传所有文件为 blob
 const files = walk(ROOT);
 console.log(`共 ${files.length} 个文件待上传…`);
 const tree = [];
@@ -73,13 +89,6 @@ for (const f of files) {
     sha: blob.sha,
   });
 }
-
-// 3. 获取父提交（若有）
-let parentSha;
-try {
-  const ref = (await api(`/repos/${user.login}/${repoName}/git/ref/heads/main`)).body;
-  parentSha = ref.object?.sha;
-} catch {}
 
 // 4. 创建 tree → commit → 更新 main 分支
 const newTree = (

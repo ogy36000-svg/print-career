@@ -1,45 +1,44 @@
 import companiesJson from "@/data/companies.json";
 import jobsJson from "@/data/jobs.json";
-import type { CompaniesData, JobsData, Company, Job } from "./types";
+import majorsJson from "@/data/majors.json";
+import certsJson from "@/data/certs.json";
+import type { CompaniesData, JobsData, Company, Job, Major, Cert, CertTimelinePhase } from "./types";
 
 export const companiesData = companiesJson as unknown as CompaniesData;
 export const jobsData = jobsJson as unknown as JobsData;
 export const companies: Company[] = companiesData.companies;
 export const jobs: Job[] = jobsData.jobs;
 
+export const majorsData = majorsJson as unknown as { updated: string; majors: Major[]; grades: { id: string; label: string }[] };
+export const majors: Major[] = majorsData.majors;
+export const gradeOptions = majorsData.grades;
+
+export const certsData = certsJson as unknown as {
+  updated: string;
+  note: string;
+  certs: Cert[];
+  timeline: { note: string; phases: CertTimelinePhase[] };
+};
+export const certs: Cert[] = certsData.certs;
+export const certTimeline = certsData.timeline;
+
 export function getCompany(id: string): Company | undefined {
   return companies.find((c) => c.id === id);
+}
+
+export function getMajor(id: string): Major | undefined {
+  return majors.find((m) => m.id === id);
 }
 
 /** 各大招聘平台实时搜索跳转链接（关键词直达，数据永远是平台实时结果） */
 export function jobSearchLinks(keyword: string, city?: string) {
   const kw = encodeURIComponent(keyword);
   return [
-    {
-      platform: "BOSS直聘",
-      color: "bg-teal-500",
-      url: `https://www.zhipin.com/web/geek/job?query=${kw}`,
-    },
-    {
-      platform: "前程无忧",
-      color: "bg-orange-500",
-      url: `https://we.51job.com/pc/search?keyword=${kw}&searchType=2&sortType=0`,
-    },
-    {
-      platform: "智联招聘",
-      color: "bg-blue-600",
-      url: `https://sou.zhaopin.com/?kw=${kw}`,
-    },
-    {
-      platform: "猎聘",
-      color: "bg-amber-500",
-      url: `https://www.liepin.com/zhaopin/?key=${kw}`,
-    },
-    {
-      platform: "中国印刷人才网",
-      color: "bg-rose-500",
-      url: `https://www.pjob.net/jobs?keyword=${kw}`,
-    },
+    { platform: "BOSS直聘", color: "bg-teal-500", url: `https://www.zhipin.com/web/geek/job?query=${kw}` },
+    { platform: "前程无忧", color: "bg-orange-500", url: `https://we.51job.com/pc/search?keyword=${kw}&searchType=2&sortType=0` },
+    { platform: "智联招聘", color: "bg-blue-600", url: `https://sou.zhaopin.com/?kw=${kw}` },
+    { platform: "猎聘", color: "bg-amber-500", url: `https://www.liepin.com/zhaopin/?key=${kw}` },
+    { platform: "中国印刷人才网", color: "bg-rose-500", url: `https://www.pjob.net/jobs?keyword=${kw}` },
   ];
 }
 
@@ -48,11 +47,11 @@ export function amapSearchLink(name: string, city: string) {
   return `https://uri.amap.com/search?keyword=${encodeURIComponent(name)}&city=${encodeURIComponent(city)}&callnative=1`;
 }
 
-export const gradeStyle: Record<string, { badge: string; ring: string; label: string }> = {
-  S: { badge: "bg-gradient-to-r from-orange-500 to-rose-500 text-white", ring: "ring-orange-300", label: "强烈推荐" },
-  A: { badge: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white", ring: "ring-blue-200", label: "推荐" },
-  B: { badge: "bg-gradient-to-r from-violet-500 to-purple-400 text-white", ring: "ring-violet-200", label: "可投" },
-  C: { badge: "bg-slate-400 text-white", ring: "ring-slate-200", label: "特殊/了解" },
+export const gradeStyle: Record<string, { badge: string; ring: string; label: string; color: string }> = {
+  S: { badge: "bg-gradient-to-r from-orange-500 to-rose-500 text-white", ring: "ring-orange-300", label: "强烈推荐", color: "#ff5a3c" },
+  A: { badge: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white", ring: "ring-blue-200", label: "推荐", color: "#2563eb" },
+  B: { badge: "bg-gradient-to-r from-violet-500 to-purple-400 text-white", ring: "ring-violet-200", label: "可投", color: "#8b5cf6" },
+  C: { badge: "bg-slate-400 text-white", ring: "ring-slate-200", label: "特殊/了解", color: "#94a3b8" },
 };
 
 /** 技能池：从岗位库聚合 + 常用补充 */
@@ -68,20 +67,7 @@ export const skillPool: string[] = Array.from(
   ])
 );
 
-export const certPool = [
-  "英语四级 CET-4",
-  "英语六级 CET-6",
-  "日语 JLPT N3",
-  "日语 JLPT N2",
-  "计算机二级",
-  "Adobe认证（PS/AI）",
-  "印前制作员（职业技能等级）",
-  "平版印刷工（职业技能等级）",
-  "G7色彩管理认证",
-  "外贸单证员",
-  "普通话二甲",
-  "驾驶证",
-];
+export const certPool = certs.map((c) => c.name);
 
 export const directionPool = [
   "生产技术（机长/数码印刷）",

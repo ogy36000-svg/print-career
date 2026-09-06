@@ -1,10 +1,11 @@
-import type { Company, UserData } from "./types";
+import type { Company, UserData, Major } from "./types";
+import { getMajor } from "./data";
 
 export interface MatchResult {
   company: Company;
   score: number;
   tier: "强烈推荐" | "推荐" | "可冲刺";
-  hits: string[]; // 匹配理由
+  hits: string[];
 }
 
 const gradeBase: Record<string, number> = { S: 88, A: 74, B: 60, C: 45 };
@@ -15,10 +16,18 @@ export function matchCompanies(companies: Company[], ud: UserData): MatchResult[
   const japanese = ud.profile.japanese;
   const hasJapanese = japanese !== "无";
   const hasEnglish = english === "CET-4" || english === "CET-6";
+  const major = getMajor(ud.profile.major);
+  const majorCompanyIds = new Set(major?.relatedCompanies ?? []);
 
   const results = companies.map((c) => {
     let score = gradeBase[c.recommend] ?? 50;
     const hits: string[] = [];
+
+    // 专业关联度（最高权重）
+    if (majorCompanyIds.has(c.id)) {
+      score += 12;
+      hits.push(`与「${major?.name}」高度对口`);
+    }
 
     // 语言杠杆
     const langText = c.lang + c.tags.join("");
@@ -49,7 +58,7 @@ export function matchCompanies(companies: Company[], ud: UserData): MatchResult[
       hits.push("与你的目标方向一致");
     }
 
-    // 本地加分
+    // 本地/近水楼台加分（广州白云区学生）
     if (c.city === "广州") {
       score += 3;
       if (c.district.includes("白云") || c.district.includes("番禺") || c.district.includes("黄埔")) {
@@ -63,4 +72,31 @@ export function matchCompanies(companies: Company[], ud: UserData): MatchResult[
   });
 
   return results.sort((a, b) => b.score - a.score);
+}
+
+/** 游客模式：仅按专业+年级快速推荐 */
+export function quickMatchByMajor(companies: Company[], majorId: string): MatchResult[] {
+  const major = getMajor(majorId);
+  const ids = new Set(major?.relatedCompanies ?? []);
+  const results = companies
+    .filter((c) => ids.has(c.id))
+    .map((c) => ({
+      company: c,
+      score: gradeBase[c.recommend] ?? 50,
+      tier: (c.recommend === "S" ? "强烈推荐" : c.recommend === "A" ? "推荐" : "可冲刺") as MatchResult["tier"],
+      hits: [`「${major?.name}」对口方向`],
+    }))
+    .sort((a, b) => b.score - a.score);
+  // 专业库外的企业按等级补到10家
+  const rest = companies
+    .filter((c) => !ids.has(c.id))
+    .map((c) => ({
+      company: c,
+      score: gradeBase[c.recommend] ?? 50,
+      tier: (c.recommend === "S" ? "强烈推荐" : c.recommend === "A" ? "推荐" : "可冲刺") as MatchResult["tier"],
+      hits: ["行业优质企业"],
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Math.max(0, 10 - results.length));
+  return [...results, ...rest];
 }
