@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 印向未来 · 数字印刷实习求职导航
 
-## Getting Started
+为广州科技职业技术大学 24级数字印刷本科定制的个人实习求职网站。
 
-First, run the development server:
+## 功能
+- **首页**：定位、数据总览、S级推荐、12条职业方向
+- **企业库**：49 家精选企业，搜索 + 等级/地区/类型筛选 + 收藏 + 招聘平台实时搜索直达
+- **企业详情**：简介、岗位、技能要求、语言/海外机会、投递状态标记
+- **企业地图**：高德地图标注（未配 Key 时为分组列表 + 高德跳转）
+- **我的档案**：信息/技能/证书/语言/意向，本地存储 + Supabase 同步码云同步
+- **成长中心**：毕业倒计时、技能清单、证书时间线、个性化匹配推荐、目标企业追踪
 
+## 本地运行
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 配置（均可选，不配也能用）
+复制 `.env.example` 为 `.env.local` 填入：
+- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`：云端同步。Supabase 建项目后在 SQL Editor 执行 `supabase/schema.sql`
+- `NEXT_PUBLIC_AMAP_KEY`：高德开发者平台（lbs.amap.com）创建「Web端(JS API)」应用获取
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 部署
+推送到 GitHub 后在 Vercel 一键导入，环境变量在 Vercel 项目设置里同样配置即可。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 数据更新
+`data/companies.json` / `data/jobs.json` 为精选数据库（附来源），更新后推送即自动重新部署。
