@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-09",
+  "updated": "2026-09-10",
   "majors": [
     {
       "id": "printing",
@@ -36,6 +36,24 @@
         "fangwei",
         "ptpress",
         "gzcb"
+      ],
+      "relatedRoles": [
+        "jizhang",
+        "ctp",
+        "digital",
+        "structure",
+        "color",
+        "anti-fake",
+        "trade",
+        "publishing"
+      ],
+      "relatedCerts": [
+        "jlpt",
+        "cet",
+        "yinzhi",
+        "ncre",
+        "g7",
+        "adobe"
       ]
     },
     {
@@ -66,6 +84,19 @@
         "ccl",
         "gz-design",
         "changrong"
+      ],
+      "relatedRoles": [
+        "structure",
+        "ctp",
+        "color",
+        "jizhang",
+        "trade"
+      ],
+      "relatedCerts": [
+        "cet",
+        "ncre",
+        "adobe",
+        "g7"
       ]
     },
     {
@@ -93,6 +124,17 @@
         "yuto",
         "jihong",
         "ptpress"
+      ],
+      "relatedRoles": [
+        "structure",
+        "ctp",
+        "color"
+      ],
+      "relatedCerts": [
+        "adobe",
+        "cet",
+        "putonghua",
+        "ncre"
       ]
     },
     {
@@ -117,6 +159,16 @@
         "jihong",
         "tianyi",
         "pulisi"
+      ],
+      "relatedRoles": [
+        "trade",
+        "publishing"
+      ],
+      "relatedCerts": [
+        "putonghua",
+        "cet",
+        "ncre",
+        "adobe"
       ]
     },
     {
@@ -142,6 +194,14 @@
         "hsg",
         "yuto",
         "lfyg"
+      ],
+      "relatedRoles": [
+        "trade"
+      ],
+      "relatedCerts": [
+        "cet",
+        "ncre",
+        "putonghua"
       ]
     },
     {
@@ -161,6 +221,22 @@
         "hexing",
         "mys",
         "donnelley"
+      ],
+      "relatedRoles": [
+        "jizhang",
+        "ctp",
+        "digital",
+        "structure",
+        "color",
+        "anti-fake",
+        "trade",
+        "publishing"
+      ],
+      "relatedCerts": [
+        "cet",
+        "jlpt",
+        "ncre",
+        "putonghua"
       ]
     }
   ],

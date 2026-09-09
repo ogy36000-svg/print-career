@@ -91,6 +91,25 @@ export function healthHint(c: Company): string | null {
   return null;
 }
 
+/** 按企业类别返回卡片背景图（印刷行业实拍风） */
+export function companyImage(c: Company): string {
+  const t = c.type + c.tags.join() + (c.tech ?? "");
+  const img = (prompt: string) =>
+    `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_16_9`;
+  if (/货币|印钞|防伪/.test(t)) return img("security printing guilloche intricate pattern close-up, banknote design, deep blue and gold, photorealistic macro");
+  if (/出版社|出版/.test(t)) return img("publishing house library stacks of printed books warm light, photorealistic");
+  if (/设备/.test(t)) return img("large offset printing press machine in bright modern factory, photorealistic");
+  if (/数码|数字/.test(t)) return img("digital inkjet label printer working in clean modern workshop, photorealistic");
+  if (/书刊|教材/.test(t)) return img("web offset press printing books at high speed, newspaper printing, photorealistic");
+  if (/金属|制罐/.test(t)) return img("aluminum beverage cans on production line, shiny metal packaging factory, photorealistic");
+  if (/标签/.test(t)) return img("colorful adhesive label rolls on flexo printing machine, photorealistic");
+  if (/软包装|塑料/.test(t)) return img("flexible packaging film rolls in bright factory, photorealistic");
+  if (/包装|瓦楞/.test(t)) return img("colorful printed packaging boxes on automated production line, photorealistic");
+  if (/外贸|新媒体|方向|跨境/.test(t)) return img("young professional at desk with laptop and world map, global trade concept, photorealistic");
+  if (/艺术|文化/.test(t)) return img("art book printing fine art reproduction workshop, gallery quality, photorealistic");
+  return img("commercial printing factory with CMYK ink colors, wide shot, photorealistic");
+}
+
 /** 技能池：从岗位库聚合 + 常用补充 */
 export const skillPool: string[] = Array.from(
   new Set([

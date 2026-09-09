@@ -15,6 +15,7 @@ export default function ProfilePage() {
   const [resumeResult, setResumeResult] = useState<ResumeResult | null>(null);
   const [resumeMsg, setResumeMsg] = useState("");
   const [applied, setApplied] = useState(false);
+  const [newSkill, setNewSkill] = useState("");
 
   if (!loaded) return <div className="p-10 text-center text-slate-400 font-bold">加载中…</div>;
 
@@ -160,7 +161,22 @@ export default function ProfilePage() {
 
       {/* 技能 */}
       <Section title={`我的技能（已选 ${p.skills.length}）`}>
-        <ChipGroup items={skillPool} selected={p.skills} onToggle={(v) => setP({ skills: toggleIn(p.skills, v) })} color="emerald" />
+        <div className="mb-3 flex gap-2">
+          <input
+            value={newSkill}
+            onChange={(e) => setNewSkill(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const v = newSkill.trim();
+                if (v && !p.skills.includes(v)) setP({ skills: [...p.skills, v] });
+                setNewSkill("");
+              }
+            }}
+            placeholder="列表没有？自己输入后回车添加"
+            className="flex-1 px-4 py-2.5 rounded-2xl bg-white/80 ring-1 ring-slate-200 focus:ring-2 focus:ring-violet-400 outline-none text-sm font-bold"
+          />
+        </div>
+        <ChipGroup items={Array.from(new Set([...skillPool, ...p.skills]))} selected={p.skills} onToggle={(v) => setP({ skills: toggleIn(p.skills, v) })} color="emerald" />
       </Section>
 
       {/* 证书 */}

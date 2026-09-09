@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import PageLoader from "@/components/PageLoader";
+import LetterWidget from "@/components/LetterWidget";
 
 export const metadata: Metadata = {
   title: "印向未来 · 实习求职导航",
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <PageLoader />
         <Nav />
+        <LetterWidget />
         <main className="flex-1 pb-24 md:pb-0 md:pt-20">{children}</main>
       </body>
     </html>

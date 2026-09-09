@@ -68,6 +68,8 @@ export interface Major {
   keywords: string[];
   defaultSkills: string[];
   relatedCompanies: string[];
+  relatedRoles?: string[];
+  relatedCerts?: string[];
 }
 
 /** 考证事件：date 为 ISO 字符串；status 区分数据来源可靠性 */
@@ -124,10 +126,20 @@ export interface Role {
 /** 行业趋势 */
 export interface IndustryData {
   updated: string;
-  trends: { id: string; title: string; badge: string; summary: string; detail: string; source: string; date: string }[];
+  trends: {
+    id: string;
+    title: string;
+    badge: string;
+    summary: string;
+    detail: string;
+    source: string;
+    date: string;
+    links?: { title: string; url: string }[];
+  }[];
   overseas: {
     note: string;
-    destinations: { name: string; x: number; y: number; note: string; companies: string }[];
+    china?: { lat: number; lng: number };
+    destinations: { name: string; x: number; y: number; lat?: number; lng?: number; note: string; companies: string }[];
   };
   english: {
     why: string;
@@ -157,6 +169,8 @@ export interface UserData {
   skillDone: string[];
   /** 成长路径任务完成状态（任务文本作为key） */
   taskDone: string[];
+  /** 用户自定义添加的技能 */
+  customSkills: string[];
   updatedAt: string;
 }
 
@@ -180,5 +194,6 @@ export const emptyUserData: UserData = {
   companyStatus: {},
   skillDone: [],
   taskDone: [],
+  customSkills: [],
   updatedAt: "",
 };

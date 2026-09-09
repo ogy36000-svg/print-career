@@ -2,20 +2,28 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { certsData as bundled, type CertsData } from "@/lib/data";
+import { certsData as bundled, majors, type CertsData } from "@/lib/data";
 import { useRemoteData } from "@/lib/remote";
+import { useUserData } from "@/lib/store";
 import { nextEventOf, daysLabel, statusStyle } from "@/lib/certUtils";
 
 export default function CertsPage() {
   const { data, remote } = useRemoteData<CertsData>("certs", bundled);
+  const { data: ud } = useUserData();
+
+  // 与档案专业相关的证书排前面并标注
+  const relatedIds = useMemo(() => new Set(majors.find((m) => m.id === ud.profile.major)?.relatedCerts ?? []), [ud.profile.major]);
 
   const sorted = useMemo(() => {
     return [...data.certs].sort((a, b) => {
+      const ra = relatedIds.has(a.id) ? 0 : 1;
+      const rb = relatedIds.has(b.id) ? 0 : 1;
+      if (ra !== rb) return ra - rb;
       const na = nextEventOf(a)?.days ?? 9999;
       const nb = nextEventOf(b)?.days ?? 9999;
       return na - nb;
     });
-  }, [data]);
+  }, [data, relatedIds]);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 md:py-12">
@@ -48,6 +56,9 @@ export default function CertsPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="font-black text-lg text-slate-800">{cert.name}</h2>
                     <span className="text-xs font-black text-orange-500">{cert.importance}</span>
+                    {relatedIds.has(cert.id) && (
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-violet-100 text-violet-600">与你专业相关</span>
+                    )}
                   </div>
                   <p className="mt-0.5 text-xs text-slate-400">{cert.category} · {cert.cost}</p>
                 </div>
