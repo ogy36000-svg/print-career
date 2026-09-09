@@ -38,6 +38,14 @@ export interface Company {
   reason: string;
   tags: string[];
   source: string;
+  /** 主要印刷/生产设备 */
+  equipment?: string[];
+  /** 产能/营收规模 */
+  capacity?: string;
+  /** 市值或上市信息 */
+  marketValue?: string;
+  /** 核心技术 */
+  tech?: string;
 }
 
 export interface Job {
@@ -62,14 +70,23 @@ export interface Major {
   relatedCompanies: string[];
 }
 
+/** 考证事件：date 为 ISO 字符串；status 区分数据来源可靠性 */
+export interface CertEvent {
+  label: string;
+  date: string;
+  type: "报名" | "考试";
+  status: "官方公布" | "按往届推算" | "常年开放" | "机构排期";
+  note?: string;
+}
+
 export interface Cert {
   id: string;
   name: string;
+  shortName: string;
   importance: string;
   category: string;
-  examTimes: string[];
-  regTimes: string[];
-  regNotice: string;
+  color: string;
+  events: CertEvent[];
   officialUrl: string;
   officialName: string;
   prep: string;
@@ -81,6 +98,42 @@ export interface CertTimelinePhase {
   period: string;
   priority: string;
   actions: string[];
+}
+
+/** 职业百科 */
+export interface Role {
+  id: string;
+  title: string;
+  category: string;
+  color: string;
+  intro: string;
+  daily: string;
+  equipment: string[];
+  software: string[];
+  requirements: string;
+  pros: string[];
+  cons: string[];
+  health: string;
+  salary: string;
+  growth: string;
+  english: string;
+  fit: string;
+  searchKeyword: string;
+}
+
+/** 行业趋势 */
+export interface IndustryData {
+  updated: string;
+  trends: { id: string; title: string; badge: string; summary: string; detail: string; source: string; date: string }[];
+  overseas: {
+    note: string;
+    destinations: { name: string; x: number; y: number; note: string; companies: string }[];
+  };
+  english: {
+    why: string;
+    terms: { en: string; zh: string }[];
+  };
+  sources: string[];
 }
 
 export interface UserData {
@@ -97,11 +150,13 @@ export interface UserData {
     japanese: string;
     directions: string[];
     resumeUrl: string;
-    resumeAnalysis: string; // AI分析结果（预留）
+    resumeAnalysis: string; // 简历本地解析摘要
   };
   favorites: string[];
   companyStatus: Record<string, "想投" | "已投递" | "面试中" | "拿到offer" | "已放弃">;
   skillDone: string[];
+  /** 成长路径任务完成状态（任务文本作为key） */
+  taskDone: string[];
   updatedAt: string;
 }
 
@@ -124,5 +179,6 @@ export const emptyUserData: UserData = {
   favorites: [],
   companyStatus: {},
   skillDone: [],
+  taskDone: [],
   updatedAt: "",
 };

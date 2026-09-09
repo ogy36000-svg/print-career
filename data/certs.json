@@ -1,185 +1,134 @@
 {
-  "updated": "2026-09-07",
-  "note": "报名/考试时间按往届规律整理，实际以官方最新公告为准。标注「预测」的为根据历年时间推算。",
+  "updated": "2026-09-09",
+  "note": "考试时间以官方最新公告为准。标注「官方公布」的来自考试机构正式公告；标注「按往届推算」的为预测场次，官方公布后会在数据更新时修正。报名均有截止日期，看到倒计时请及时行动。",
   "certs": [
     {
-      "id": "cet4",
-      "name": "英语四级 CET-4",
+      "id": "jlpt",
+      "name": "日语能力考 JLPT",
+      "shortName": "JLPT",
       "importance": "★★★★★",
       "category": "语言",
-      "examTimes": ["6月第三个周六", "12月第三个周六"],
-      "regTimes": ["3月下旬-4月初", "9月下旬-10月初"],
-      "regNotice": "预测：2026年12月考试报名预计9月下旬开始",
-      "officialUrl": "https://cet-bm.neea.edu.cn/",
-      "officialName": "全国大学英语四、六级考试报名网",
-      "prep": "词汇+真题，每天1小时，3个月稳过",
-      "cost": "约35元",
-      "source": "全国大学英语四、六级考试委员会"
+      "color": "#f43f5e",
+      "events": [
+        { "label": "12月场·报名截止", "date": "2026-09-10T14:00", "type": "报名", "status": "官方公布" },
+        { "label": "12月场·考试日（N1-N5）", "date": "2026-12-06T09:00", "type": "考试", "status": "官方公布" },
+        { "label": "2027年7月场·考试日", "date": "2027-07-04T09:00", "type": "考试", "status": "按往届推算", "note": "每年7月第一个周日" }
+      ],
+      "officialUrl": "https://jlpt.neea.cn",
+      "officialName": "教育部教育考试院 JLPT 报名网",
+      "prep": "N3是日资门槛，N2是王牌。报名要抢考位，开放当天上午7点守在电脑前",
+      "cost": "N1/N2 550元，N3/N4/N5 450元",
+      "source": "jlpt.neea.cn（2026-09-09 核实）"
     },
     {
-      "id": "cet6",
-      "name": "英语六级 CET-6",
+      "id": "cet",
+      "name": "英语四六级 CET-4/6",
+      "shortName": "CET",
+      "importance": "★★★★★",
+      "category": "语言",
+      "color": "#3b82f6",
+      "events": [
+        { "label": "下半年·报名（各校通知）", "date": "2026-09-20T09:00", "type": "报名", "status": "按往届推算", "note": "9月中下旬，以学校教务处通知为准" },
+        { "label": "下半年·笔试", "date": "2026-12-12T09:00", "type": "考试", "status": "按往届推算", "note": "12月第二个周六惯例" },
+        { "label": "2027上半年·笔试", "date": "2027-06-12T09:00", "type": "考试", "status": "按往届推算" }
+      ],
+      "officialUrl": "https://cet-bm.neea.edu.cn",
+      "officialName": "CET 全国网上报名系统",
+      "prep": "外企（艾利丹尼森/安姆科/当纳利）和外贸岗硬门槛。四级必过，六级冲高分",
+      "cost": "约30-50元（各省不同）",
+      "source": "中国教育考试网"
+    },
+    {
+      "id": "ncre",
+      "name": "计算机二级 NCRE",
+      "shortName": "NCRE",
+      "importance": "★★★",
+      "category": "计算机",
+      "color": "#8b5cf6",
+      "events": [
+        { "label": "9月场·考试日", "date": "2026-09-19T08:00", "type": "考试", "status": "官方公布", "note": "9月19-21日分批机考，个人场次看准考证" },
+        { "label": "2027年3月场·报名", "date": "2026-12-26T09:00", "type": "报名", "status": "按往届推算", "note": "12月底至1月，各省不同" },
+        { "label": "2027年3月场·考试日", "date": "2027-03-27T08:00", "type": "考试", "status": "按往届推算", "note": "3月最后一个周末惯例" }
+      ],
+      "officialUrl": "https://ncre-bm.neea.cn",
+      "officialName": "NCRE 全国网上报名系统",
+      "prep": "选 MS Office 高级应用 最实用；简历基础配置，优先级低于四六级和日语",
+      "cost": "137元/科（广东）",
+      "source": "ncre.neea.edu.cn（2026-09-09 核实）"
+    },
+    {
+      "id": "putonghua",
+      "name": "普通话水平测试",
+      "shortName": "普通话",
+      "importance": "★★",
+      "category": "语言",
+      "color": "#10b981",
+      "events": [
+        { "label": "常年滚动测试（各地测试站）", "date": "2026-10-01T09:00", "type": "考试", "status": "常年开放", "note": "各地测试站每月多次，随报随考" }
+      ],
+      "officialUrl": "https://bm.cltt.org",
+      "officialName": "国家普通话水平测试在线报名系统",
+      "prep": "二级乙等以上即可，新媒体/教师方向建议二甲",
+      "cost": "约50元",
+      "source": "bm.cltt.org"
+    },
+    {
+      "id": "yinzhi",
+      "name": "印前制作员/平版印刷工（职业技能等级）",
+      "shortName": "印刷技能证",
       "importance": "★★★★",
-      "category": "语言",
-      "examTimes": ["6月第三个周六", "12月第三个周六"],
-      "regTimes": ["3月下旬-4月初", "9月下旬-10月初"],
-      "regNotice": "四级通过后才能报考",
-      "officialUrl": "https://cet-bm.neea.edu.cn/",
-      "officialName": "全国大学英语四、六级考试报名网",
-      "prep": "在四级基础上强化听力和阅读",
-      "cost": "约37元",
-      "source": "全国大学英语四、六级考试委员会"
-    },
-    {
-      "id": "jlpt-n3",
-      "name": "日语 JLPT N3",
-      "importance": "★★★★★",
-      "category": "语言",
-      "examTimes": ["7月第一个周日", "12月第一个周日"],
-      "regTimes": ["3月中下旬", "8月下旬-9月初"],
-      "regNotice": "预测：2026年12月考试报名预计8月下旬-9月初，考位紧张需抢报",
-      "officialUrl": "https://jlpt.neea.edu.cn/",
-      "officialName": "教育部教育考试院日本语能力测试报名网",
-      "prep": "N5-N4基础者需4-6个月，每天2小时",
-      "cost": "约450元",
-      "source": "日本国际交流基金会/日本国际教育支援协会"
-    },
-    {
-      "id": "jlpt-n2",
-      "name": "日语 JLPT N2",
-      "importance": "★★★★★",
-      "category": "语言",
-      "examTimes": ["7月第一个周日", "12月第一个周日"],
-      "regTimes": ["3月中下旬", "8月下旬-9月初"],
-      "regNotice": "N2是日资企业技术岗硬门槛，建议N3通过后立即备考",
-      "officialUrl": "https://jlpt.neea.edu.cn/",
-      "officialName": "教育部教育考试院日本语能力测试报名网",
-      "prep": "N3基础者需6-8个月",
-      "cost": "约550元",
-      "source": "日本国际交流基金会/日本国际教育支援协会"
-    },
-    {
-      "id": "ncre2",
-      "name": "计算机二级",
-      "importance": "★★★",
-      "category": "通用",
-      "examTimes": ["3月最后一个周末", "9月倒数第二个周末", "12月第一个周末（部分省份）"],
-      "regTimes": ["12月底-1月初", "6月底-7月初", "9月底（部分省份）"],
-      "regNotice": "预测：2026年12月考试报名预计9月底，各省时间略有差异",
-      "officialUrl": "https://ncre-bm.neea.edu.cn/",
-      "officialName": "全国计算机等级考试报名网",
-      "prep": "Office高级应用或Python，刷题2-4周",
-      "cost": "约105-140元",
-      "source": "教育部教育考试院"
-    },
-    {
-      "id": "adobe",
-      "name": "Adobe 国际认证（PS/AI）",
-      "importance": "★★★",
-      "category": "设计",
-      "examTimes": ["随时可约（授权考试中心）"],
-      "regTimes": ["随时报名"],
-      "regNotice": "无固定统考时间，联系当地Adobe授权培训中心报名",
-      "officialUrl": "https://www.adobe.com/cn/certification.html",
-      "officialName": "Adobe 国际认证官网",
-      "prep": "熟练PS/AI操作，考前刷官方题库1-2周",
-      "cost": "约800-1200元/科",
-      "source": "Adobe 国际认证"
+      "category": "专业",
+      "color": "#f97316",
+      "events": [
+        { "label": "滚动报名（人社备案评价机构）", "date": "2026-10-01T09:00", "type": "报名", "status": "常年开放", "note": "各省评价机构自行安排，广东可询学校就业办/省人社厅" }
+      ],
+      "officialUrl": "https://www.osta.org.cn",
+      "officialName": "技能人才评价证书全国联网查询",
+      "prep": "专业身份证明，国企/大厂认可；学校通常会组织，问辅导员",
+      "cost": "约300-500元（在校生常有补贴）",
+      "source": "人社部门备案评价机构"
     },
     {
       "id": "g7",
       "name": "G7 色彩管理认证",
+      "shortName": "G7",
       "importance": "★★★",
-      "category": "印刷技术",
-      "examTimes": ["不定期（培训机构组织）"],
-      "regTimes": ["联系培训机构"],
-      "regNotice": "国内由印刷技术协会或培训机构组织，无统一官网",
-      "officialUrl": "https://www.idealliance.org/",
-      "officialName": "Idealliance（G7认证机构）",
-      "prep": "需实际印刷色彩管理经验，建议先实习再考",
-      "cost": "约3000-8000元（含培训）",
-      "source": "Idealliance"
+      "category": "专业",
+      "color": "#06b6d4",
+      "events": [
+        { "label": "培训+考试（不定期开班）", "date": "2026-11-01T09:00", "type": "考试", "status": "机构排期", "note": "由授权培训机构组织，一年多次" }
+      ],
+      "officialUrl": "https://www.idealliance.org",
+      "officialName": "Idealliance / 国内授权机构",
+      "prep": "走色彩/高端印刷路线的专业认证，懂的人少、懂了就值钱",
+      "cost": "约3000-6000元（含培训）",
+      "source": "Idealliance 官网"
     },
     {
-      "id": "prepress",
-      "name": "印前制作员（职业技能等级）",
-      "importance": "★★★★",
-      "category": "印刷技术",
-      "examTimes": ["各省人社部门定期组织"],
-      "regTimes": ["关注当地人社局通知"],
-      "regNotice": "职业技能等级认定，国企/大厂认可度高",
-      "officialUrl": "http://jndj.osta.org.cn/",
-      "officialName": "技能人才评价证书全国联网查询",
-      "prep": "学校通常会组织，跟着老师走",
-      "cost": "约200-500元",
-      "source": "人力资源和社会保障部"
-    },
-    {
-      "id": "waimao",
-      "name": "外贸单证员",
-      "importance": "★★",
-      "category": "外贸",
-      "examTimes": ["5月", "11月"],
-      "regTimes": ["3月", "9月"],
-      "regNotice": "只有确定走外贸方向才建议考",
-      "officialUrl": "http://www.danzheng.org.cn/",
-      "officialName": "全国外贸单证员考试中心",
-      "prep": "外贸实务+英语，1个月冲刺",
-      "cost": "约200元",
-      "source": "中国对外贸易经济合作企业协会"
+      "id": "adobe",
+      "name": "Adobe 认证（ACP）",
+      "shortName": "Adobe",
+      "importance": "★★★",
+      "category": "设计",
+      "color": "#ec4899",
+      "events": [
+        { "label": "随约随考（授权考试中心）", "date": "2026-10-01T09:00", "type": "考试", "status": "常年开放", "note": "预约制机考" }
+      ],
+      "officialUrl": "https://www.adobe.com/cn/certification.html",
+      "officialName": "Adobe 认证官网",
+      "prep": "设计路线加分项；Photoshop/Illustrator 选考",
+      "cost": "约700元/科",
+      "source": "Adobe 官网"
     }
   ],
   "timeline": {
-    "note": "按大三学年规划，其他年级可整体前移/后推",
+    "note": "按你的年级（大三）排的关键路径，和考证倒计时联动",
     "phases": [
-      {
-        "period": "2026年9-12月（大三上）",
-        "priority": "最高",
-        "actions": [
-          "12月第一个周日：JLPT N3 考试（8月下旬-9月初报名，考位紧张提前抢）",
-          "12月第三个周六：CET-4 考试（9月下旬-10月初报名）",
-          "9月倒数第二个周末：计算机二级（6月底-7月初已报名，可考可再考）",
-          "联系学校普理司产业学院，争取寒假实习名额",
-          "用本网站企业库收藏5-10家目标企业"
-        ]
-      },
-      {
-        "period": "2027年1-2月（寒假）",
-        "priority": "高",
-        "actions": [
-          "第一段实习：普理司/麦普数码/白云区印刷厂（设备或数码印刷方向）",
-          "寒假期间完善简历，录入本站档案",
-          "如N3已过，开始N2备考"
-        ]
-      },
-      {
-        "period": "2027年3-6月（大三下）",
-        "priority": "高",
-        "actions": [
-          "6月第三个周六：CET-6（如四级已过）",
-          "7月第一个周日：JLPT N2（如N3已过）",
-          "学校组织考印前制作员职业等级证书",
-          "3-5个完整作品集（包装设计/品牌视觉）",
-          "开始关注S级企业暑期实习招聘（裕同/中荣/劲嘉/艾利丹尼森）"
-        ]
-      },
-      {
-        "period": "2027年7-8月（暑假）",
-        "priority": "最高",
-        "actions": [
-          "第二段实习：S级企业（暑期实习≈半个offer）",
-          "实习期间标记本站「面试中/拿到offer」状态"
-        ]
-      },
-      {
-        "period": "2027年9-11月（秋招）",
-        "priority": "最高",
-        "actions": [
-          "9-11月秋招主战场：批量投递企业库中标记「想投」的企业",
-          "每周复盘投递状态",
-          "11月：外贸单证员（如走外贸方向）"
-        ]
-      }
+      { "period": "2026 秋季学期", "priority": "四级+日语N3", "actions": ["12月考四级", "12月6日 JLPT N3", "对接普理司产业学院", "3个包装设计作品"] },
+      { "period": "2026-27 寒假", "priority": "第一段实习", "actions": ["普理司/麦普/白云区印厂", "先进去再说，不怕岗位小"] },
+      { "period": "2027 春季学期", "priority": "N2+技能证", "actions": ["日语冲N2", "有余力考六级", "印前制作员职业等级证", "作品集补到5个"] },
+      { "period": "2027 暑假", "priority": "S级企业实习", "actions": ["裕同/中荣/劲嘉/艾利丹尼森/利丰雅高", "暑期实习≈半个offer"] },
+      { "period": "2027 秋招", "priority": "批量投递", "actions": ["9-11月主战场", "优先投「强烈推荐」标记企业", "每周复盘投递状态"] }
     ]
   }
 }

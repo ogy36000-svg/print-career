@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 const tabs = [
   { href: "/", label: "首页" },
   { href: "/companies", label: "企业库" },
+  { href: "/roles", label: "职业百科" },
+  { href: "/industry", label: "趋势" },
+  { href: "/certs", label: "考证" },
   { href: "/growth", label: "成长" },
   { href: "/profile", label: "档案" },
 ];
@@ -44,15 +47,15 @@ export default function Nav() {
         </div>
       </header>
 
-      {/* 移动端底部标签栏 */}
+      {/* 移动端底部标签栏（可横滑） */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        <div className="mx-4 mb-4 rounded-2xl bg-white/70 backdrop-blur-xl ring-1 ring-white/50 shadow-xl shadow-slate-300/30">
-          <div className="grid grid-cols-4">
+        <div className="mx-3 mb-3 rounded-2xl bg-white/70 backdrop-blur-xl ring-1 ring-white/50 shadow-xl shadow-slate-300/30">
+          <div className="flex overflow-x-auto no-scrollbar px-1">
             {tabs.map((t) => (
               <Link
                 key={t.href}
                 href={t.href}
-                className={`py-3 text-center text-xs font-black transition-all rounded-xl mx-1 ${
+                className={`flex-1 min-w-[64px] py-3 text-center text-xs font-black whitespace-nowrap transition-all rounded-xl mx-0.5 ${
                   isActive(t.href)
                     ? "bg-slate-900 text-white"
                     : "text-slate-500"

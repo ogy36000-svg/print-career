@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { companies, getCompany, gradeStyle, jobSearchLinks, amapSearchLink } from "@/lib/data";
+import { companies, getCompany, gradeStyle, jobSearchLinks, amapSearchLink, healthHint } from "@/lib/data";
 import FavButton from "@/components/FavButton";
 import CompanyStatus from "@/components/CompanyStatus";
 import CompanyCard from "@/components/CompanyCard";
@@ -62,6 +62,38 @@ export default async function CompanyDetail({ params }: { params: Promise<{ id: 
       {/* 投递状态 */}
       <CompanyStatus companyId={c.id} />
 
+      {/* 设备 / 产能 / 市值 */}
+      {(c.equipment?.length || c.capacity || c.marketValue || c.tech) && (
+        <div className="mt-6 glass rounded-3xl p-6">
+          <h2 className="font-black text-lg text-slate-800">设备与实力</h2>
+          <div className="mt-4 grid md:grid-cols-2 gap-4">
+            <div className="space-y-2.5 text-sm">
+              {c.capacity && <p><span className="font-black text-slate-700">产能/规模：</span><span className="text-slate-600">{c.capacity}</span></p>}
+              {c.marketValue && <p><span className="font-black text-slate-700">市值/资本：</span><span className="text-slate-600">{c.marketValue}</span></p>}
+              {c.tech && <p><span className="font-black text-slate-700">核心技术：</span><span className="text-slate-600">{c.tech}</span></p>}
+            </div>
+            {c.equipment && c.equipment.length > 0 && (
+              <div>
+                <p className="text-xs font-black text-slate-400">主要设备</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {c.equipment.map((e) => (
+                    <span key={e} className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">{e}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 职业健康提示 */}
+      {healthHint(c) && (
+        <div className="mt-6 rounded-3xl bg-amber-50/80 ring-1 ring-amber-100 p-5">
+          <p className="text-sm font-black text-amber-600">职业健康提示</p>
+          <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">{healthHint(c)}</p>
+        </div>
+      )}
+
       {/* 岗位与要求 */}
       <div className="mt-6 grid md:grid-cols-2 gap-4">
         <div className="glass rounded-3xl p-6">
@@ -107,7 +139,7 @@ export default async function CompanyDetail({ params }: { params: Promise<{ id: 
       <div className="mt-6 glass-strong rounded-3xl p-6 md:p-8">
         <h2 className="font-black text-lg md:text-xl text-slate-800">查它在招什么（实时）</h2>
         <p className="mt-1 text-xs text-slate-400">点击跳转到各平台对该企业的实时搜索结果，岗位数据永远是最新的</p>
-        <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-2.5">
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-2.5">
           {links.map((l) => (
             <a key={l.platform} href={l.url} target="_blank" rel="noreferrer"
               className={`${l.color} rounded-2xl px-3 py-3 text-center text-sm font-black text-white hover:scale-105 active:scale-95 transition-transform shadow-md`}>

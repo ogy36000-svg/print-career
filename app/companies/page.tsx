@@ -12,16 +12,35 @@ const relationFilters = [
   { key: "indirect", label: "间接/交叉方向" },
 ] as const;
 const regionFilters = ["全部", "珠三角", "广东省外", "外企", "日资"] as const;
+const typeFilters = ["全部", "国企/央企", "外企/合资", "民营上市", "出版社", "设备商", "印钞/防伪", "包装", "数码印刷"] as const;
+
+function matchType(c: (typeof companies)[number], t: string): boolean {
+  const hay = c.type + c.listed + c.tags.join() + c.fullName;
+  switch (t) {
+    case "全部": return true;
+    case "国企/央企": return /国企|央企|财政部|教育部|直属|南方出版|联合出版|国资/.test(hay);
+    case "外企/合资": return /外资|外企|美资|日资|港资|合资|德资/.test(hay);
+    case "民营上市": return /上市/.test(c.listed) && !/国企|央企|外资|日资|美资|港资|德资|合资/.test(hay);
+    case "出版社": return /出版社|出版/.test(hay);
+    case "设备商": return /设备/.test(hay);
+    case "印钞/防伪": return /印钞|货币|防伪|票据/.test(hay);
+    case "包装": return /包装/.test(c.type);
+    case "数码印刷": return /数码|数字/.test(hay);
+    default: return true;
+  }
+}
 
 export default function CompaniesPage() {
   const [q, setQ] = useState("");
   const [grade, setGrade] = useState<(typeof gradeFilters)[number]>("全部");
   const [relation, setRelation] = useState<(typeof relationFilters)[number]["key"]>("all");
   const [region, setRegion] = useState<(typeof regionFilters)[number]>("全部");
+  const [ctype, setCtype] = useState<(typeof typeFilters)[number]>("全部");
 
   const filtered = useMemo(() => {
     return companies
       .filter((c) => {
+        if (!matchType(c, ctype)) return false;
         if (grade !== "全部" && c.recommend !== grade) return false;
         if (relation !== "all" && c.relation !== relation) return false;
         if (region !== "全部") {
@@ -38,7 +57,7 @@ export default function CompaniesPage() {
         return true;
       })
       .sort((a, b) => a.recommend.localeCompare(b.recommend) || (a.rank2025 ?? 999) - (b.rank2025 ?? 999));
-  }, [q, grade, relation, region]);
+  }, [q, grade, relation, region, ctype]);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8 md:py-12">
@@ -66,6 +85,7 @@ export default function CompaniesPage() {
 
       {/* 筛选器 */}
       <div className="mt-5 space-y-3 max-w-2xl mx-auto">
+        <FilterRow label="类型" items={typeFilters.map((t) => ({ key: t, label: t }))} active={ctype} onChange={(k) => setCtype(k as typeof ctype)} />
         <FilterRow label="等级" items={gradeFilters.map((g) => ({ key: g, label: g === "全部" ? "全部" : `${g} 级` }))} active={grade} onChange={(k) => setGrade(k as typeof grade)} />
         <FilterRow label="关联" items={relationFilters.map((r) => ({ key: r.key, label: r.label }))} active={relation} onChange={(k) => setRelation(k as typeof relation)} />
         <FilterRow label="地区" items={regionFilters.map((c) => ({ key: c, label: c }))} active={region} onChange={(k) => setRegion(k as typeof region)} />
