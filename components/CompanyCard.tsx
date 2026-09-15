@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { Company } from "@/lib/types";
-import { gradeStyle, companyImage } from "@/lib/data";
+import { gradeStyle } from "@/lib/data";
 import FavButton from "./FavButton";
 
 interface CompanyCardProps {
@@ -25,23 +25,17 @@ export default function CompanyCard({ company, index = 0, compact = false }: Com
       <div className="relative overflow-hidden rounded-[1.75rem] bg-white/70 backdrop-blur-xl ring-1 ring-white/60 shadow-lg shadow-slate-200/50 group">
         {/* 背景图头 */}
         <Link href={`/companies/${company.id}`} className="block relative h-32 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={companyImage(company)}
-            alt={company.name}
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-blue-900" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/85 via-slate-900/30 to-transparent" />
           <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-2">
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-black text-lg tracking-tight text-white drop-shadow">{company.name}</h3>
                 <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-full ${g.badge} shadow-sm`}>
-                  {company.recommend} · {g.label}
+                  企业研究对象
                 </span>
                 {company.rank2025 && (
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-400/90 text-amber-950">百强第{company.rank2025}</span>
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-400/90 text-amber-950">2025榜单第{company.rank2025}</span>
                 )}
               </div>
               <p className="mt-0.5 text-[11px] text-white/70 truncate">{company.fullName}</p>
@@ -53,6 +47,7 @@ export default function CompanyCard({ company, index = 0, compact = false }: Com
         </Link>
 
         <div className="p-4">
+          <p className="mb-2 text-xs text-amber-800">企业研究对象 · 常见岗位不是当前招聘</p>
           <p className={`text-sm text-slate-600 leading-relaxed ${compact ? "line-clamp-2" : "line-clamp-3"}`}>{company.desc}</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             <span className="text-[11px] font-bold px-2 py-1 rounded-lg bg-blue-50/80 text-blue-600 border border-blue-100/50">

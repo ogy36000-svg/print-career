@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- legacy Node CommonJS maintenance tool */
 // 企业库扩充：新增出版社/设备商/国企/印钞/防伪 + 为头部企业补充 设备/产能/市值/技术 字段
 const fs = require("fs");
 const path = __dirname + "/../data/companies.json";

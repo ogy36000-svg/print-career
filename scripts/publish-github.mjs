@@ -1,6 +1,6 @@
 // 通过 GitHub REST API 推送代码（适用于 github.com 被网络限制、但 api.github.com 可用的环境）
 // 用法：node scripts/publish-github.mjs <token> [repo名] [提交信息]
-import { readFileSync, readdirSync, statSync, existsSync } from "fs";
+import { readFileSync, readdirSync, statSync } from "fs";
 import { join, relative, sep } from "path";
 
 const [token, repoName = "print-career", message = `update ${new Date().toISOString().slice(0, 16).replace("T", " ")}`] = process.argv.slice(2);

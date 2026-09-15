@@ -53,8 +53,8 @@ export function getMajor(id: string): Major | undefined {
   return majors.find((m) => m.id === id);
 }
 
-/** 各大招聘平台实时搜索跳转链接（关键词直达，数据永远是平台实时结果） */
-export function jobSearchLinks(keyword: string, city?: string) {
+/** 招聘平台关键词搜索入口；本站不声称平台一定返回对应公司的有效岗位。 */
+export function jobSearchLinks(keyword: string) {
   const kw = encodeURIComponent(keyword);
   return [
     { platform: "BOSS直聘", color: "bg-teal-500", url: `https://www.zhipin.com/web/geek/job?query=${kw}` },

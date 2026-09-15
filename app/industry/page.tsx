@@ -6,8 +6,11 @@ import { industryData as bundled } from "@/lib/data";
 import type { IndustryData } from "@/lib/types";
 import { useRemoteData } from "@/lib/remote";
 import RealMap from "@/components/RealMap";
+import ResearchPanel from "@/components/ResearchPanel";
+import {useCareerCatalog} from "@/components/CareerProvider";
 
 export default function IndustryPage() {
+  const {query}=useCareerCatalog();
   const { data, remote } = useRemoteData<IndustryData>("industry", bundled);
   const [showTerms, setShowTerms] = useState(false);
 
@@ -29,6 +32,8 @@ export default function IndustryPage() {
       </motion.p>
       <p className="mt-2 text-center text-[11px] text-slate-400">数据更新于 {data.updated}{remote ? "（已同步最新版）" : ""}</p>
 
+      <p className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900">下方为原版印刷行业历史参考资料，不是实时行业统计，也不适用于所有专业。当前专业「{query.major}」的新资料请用联网研究核查，尤其不要把历史预测当成今年事实。</p>
+      <div className="mt-6"><ResearchPanel key={query.major} initialTopic="career"/></div>
       {/* 趋势卡片（可点击信源） */}
       <div className="mt-8 grid md:grid-cols-2 gap-5">
         {data.trends.map((t, i) => (

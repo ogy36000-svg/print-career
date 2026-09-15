@@ -3,6 +3,8 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import PageLoader from "@/components/PageLoader";
 import LetterWidget from "@/components/LetterWidget";
+import { CareerProvider } from "@/components/CareerProvider";
+import { UserDataProvider } from "@/lib/store";
 
 export const metadata: Metadata = {
   title: "印向未来 · 实习求职导航",
@@ -19,10 +21,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="zh-CN" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
+        <UserDataProvider><CareerProvider>
         <PageLoader />
         <Nav />
         <LetterWidget />
         <main className="flex-1 pb-24 md:pb-0 md:pt-20">{children}</main>
+        </CareerProvider></UserDataProvider>
       </body>
     </html>
   );

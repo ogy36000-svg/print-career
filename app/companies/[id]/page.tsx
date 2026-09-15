@@ -1,24 +1,28 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { companies, getCompany, gradeStyle, jobSearchLinks, amapSearchLink, healthHint, companyImage } from "@/lib/data";
+import { gradeStyle, jobSearchLinks, amapSearchLink } from "@/lib/data";
 import FavButton from "@/components/FavButton";
 import CompanyStatus from "@/components/CompanyStatus";
 import CompanyCard from "@/components/CompanyCard";
+import { loadCatalog } from "@/lib/server/catalog";
+import { asLegacyCompany } from "@/lib/career/backup";
+import ResearchPanel from "@/components/ResearchPanel";
 
-export function generateStaticParams() {
-  return companies.map((c) => ({ id: c.id }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function CompanyDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const c = getCompany(id);
-  if (!c) notFound();
+  const {catalog,message}=await loadCatalog();
+  const companies=catalog.employers.map(asLegacyCompany);
+  const employer=catalog.employers.find(e=>e.id===id);
+  const c=companies.find(e=>e.id===id);
+  if (!c || !employer) notFound();
   const g = gradeStyle[c.recommend];
   const links = jobSearchLinks(c.name.replace(/（.*）/, "").replace(/\(.*\)/, ""));
-  const similar = companies
-    .filter((x) => x.id !== c.id && (x.type.split("/")[0] === c.type.split("/")[0] || x.recommend === c.recommend))
-    .slice(0, 4);
-  const health = healthHint(c);
+  const similar = catalog.employers
+    .filter((x) => x.id !== employer.id && (x.sector === employer.sector || x.tags.some(tag => employer.tags.includes(tag))))
+    .slice(0, 4).map(asLegacyCompany);
+  const health = "工作环境、轮班与劳动防护需要结合实际机型和现场培训核实，不能仅凭行业名称保证安全。";
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
@@ -26,16 +30,18 @@ export default async function CompanyDetail({ params }: { params: Promise<{ id: 
         ← 返回企业库
       </Link>
 
+      <p className="mt-3 text-xs text-amber-800">{message} 企业研究对象，不代表在招职位。</p>
+      <p className="mt-2 text-xs text-slate-500">资料核验：{employer.evidence.checkedAt ?? "待核实"}。设备数量、机长编制与往届录用学校需要具体来源核验。</p>
+      {employer.evidence.url && <a className="mt-2 inline-block text-sm text-blue-700 underline" href={employer.evidence.url} target="_blank" rel="noreferrer">打开企业资料来源 ↗</a>}
       {/* 头部横幅图 */}
       <div className="mt-4 relative rounded-[2rem] overflow-hidden ring-1 ring-white/60 shadow-lg">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={companyImage(c)} alt={c.name} className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-800 to-slate-700" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-slate-900/10" />
         <div className="relative p-6 md:p-10 pt-20 md:pt-28">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`text-xs font-black px-3 py-1 rounded-full ${g.badge} shadow-sm`}>{c.recommend} · {g.label}</span>
+                <span className={`text-xs font-black px-3 py-1 rounded-full ${g.badge} shadow-sm`}>企业研究对象</span>
                 {c.rank2025 && <span className="text-xs font-black px-3 py-1 rounded-full bg-amber-400/90 text-amber-950">2025印刷百强 第{c.rank2025}名</span>}
                 <span className="text-xs font-bold px-3 py-1 rounded-full bg-white/20 text-white backdrop-blur">{c.listed}</span>
               </div>
@@ -60,19 +66,19 @@ export default async function CompanyDetail({ params }: { params: Promise<{ id: 
             <h2 className="font-black text-lg text-slate-800">企业简介</h2>
             <p className="mt-3 text-sm md:text-base leading-relaxed text-slate-600">{c.desc}</p>
             <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-orange-50/80 to-rose-50/80 ring-1 ring-orange-100/50">
-              <p className="text-sm font-black text-orange-600">入选亮点</p>
+              <p className="text-sm font-black text-orange-600">资料依据与限制</p>
               <p className="mt-1 text-sm text-slate-600 leading-relaxed">{c.reason}</p>
             </div>
           </div>
 
           {/* 岗位与要求 */}
           <div className="mt-6 glass rounded-3xl p-6">
-            <h2 className="font-black text-lg text-slate-800">常见岗位 <span className="text-xs font-bold text-slate-400">点岗位名可搜实时职位</span></h2>
+            <h2 className="font-black text-lg text-slate-800">关联能力方向 <span className="text-xs font-bold text-slate-400">平台搜索；不是岗位公告</span></h2>
             <div className="mt-3 flex flex-wrap gap-2">
-              {c.jobs.map((j) => (
+              {employer.tags.map((j) => (
                 <a
                   key={j}
-                  href={`https://www.zhipin.com/web/geek/job?query=${encodeURIComponent(j)}`}
+                  href={`https://www.zhipin.com/web/geek/job?query=${encodeURIComponent(c.name+" "+j)}`}
                   target="_blank"
                   rel="noreferrer"
                   className="text-xs font-bold px-3 py-1.5 rounded-full bg-blue-50/80 text-blue-700 border border-blue-100/50 hover:bg-blue-100/80 transition-colors"
@@ -81,7 +87,7 @@ export default async function CompanyDetail({ params }: { params: Promise<{ id: 
                 </a>
               ))}
             </div>
-            <h2 className="mt-6 font-black text-lg text-slate-800">需要具备</h2>
+            <h2 className="mt-6 font-black text-lg text-slate-800">研究相关能力，不代表录用门槛</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {c.skills.map((s) => (
                 <span key={s} className="text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-50/80 text-emerald-700 border border-emerald-100/50">
@@ -90,14 +96,14 @@ export default async function CompanyDetail({ params }: { params: Promise<{ id: 
               ))}
             </div>
             <div className="mt-5 grid md:grid-cols-2 gap-4 text-sm">
-              <p className="text-slate-600"><span className="font-black text-slate-800">语言要求：</span>{c.lang}</p>
-              <p className="text-slate-600"><span className="font-black text-slate-800">海外机会：</span>{c.overseas}</p>
+              <p className="text-slate-600"><span className="font-black text-slate-800">语言要求：</span>具体要求以当期招聘公告为准（原版语言描述尚未重新核验）</p>
+              <p className="text-slate-600"><span className="font-black text-slate-800">海外机会：</span>海外机会以当期官方公告为准</p>
             </div>
           </div>
 
           {/* 招聘入口 */}
           <div className="mt-6 glass-strong rounded-3xl p-6">
-            <h2 className="font-black text-lg text-slate-800">在招岗位 · 平台直达</h2>
+            <h2 className="font-black text-lg text-slate-800">招聘平台关键词搜索</h2>
             <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2.5">
               {links.map((l) => (
                 <a key={l.platform} href={l.url} target="_blank" rel="noreferrer"
@@ -136,10 +142,10 @@ export default async function CompanyDetail({ params }: { params: Promise<{ id: 
             <CompanyStatus companyId={c.id} />
           </div>
 
-          {/* 设备与实力 */}
+          {/* 原版设备与实力 · 待核实 */}
           {(c.equipment?.length || c.capacity || c.marketValue || c.tech) && (
             <div className="glass rounded-3xl p-5">
-              <p className="font-black text-slate-800">设备与实力</p>
+              <p className="font-black text-slate-800">历史设备线索 · 未重新核验</p>
               <div className="mt-3 space-y-2.5 text-xs">
                 {c.capacity && <p className="text-slate-600"><span className="font-black text-slate-700">产能规模</span><br />{c.capacity}</p>}
                 {c.marketValue && <p className="text-slate-600"><span className="font-black text-slate-700">市值/资本</span><br />{c.marketValue}</p>}
@@ -166,7 +172,8 @@ export default async function CompanyDetail({ params }: { params: Promise<{ id: 
       </div>
 
       {/* 来源 */}
-      <p className="mt-6 text-[11px] text-slate-400">资料来源：{c.source} · 数据库更新于 2026-09</p>
+      <p className="mt-6 text-[11px] text-slate-400">资料来源：{c.source} · 目录版本 {catalog.updated}（不代表招聘发布时间）</p>
+      <div className="mt-6"><ResearchPanel initialCompany={employer.name}/></div>
 
       {/* 相似企业 */}
       {similar.length > 0 && (

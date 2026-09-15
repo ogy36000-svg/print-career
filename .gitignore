@@ -44,3 +44,7 @@ next-env.d.ts
 
 secrets.local.txt
 .vercel
+.test-build/
+.firecrawl/
+artifacts/
+.tool-build/

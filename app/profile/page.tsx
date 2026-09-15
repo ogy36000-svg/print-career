@@ -3,14 +3,16 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useUserData } from "@/lib/store";
-import { skillPool, certPool, directionPool, majors, gradeOptions } from "@/lib/data";
+import { certPool, directionPool, majors, gradeOptions } from "@/lib/data";
 import { extractText, analyzeResume, type ResumeResult } from "@/lib/resume";
 
+import AccountPanel from "@/components/AccountPanel";
+import { useCareerCatalog } from "@/components/CareerProvider";
+import { careerAdvice } from "@/lib/career/engine";
+
 export default function ProfilePage() {
-  const { data, update, syncCode, bindSyncCode, cloudStatus, loaded } = useUserData();
-  const [codeInput, setCodeInput] = useState("");
-  const [syncMsg, setSyncMsg] = useState("");
-  const [showSync, setShowSync] = useState(false);
+  const { data, update, cloudStatus, loaded } = useUserData();
+  const { query, setQuery, catalog } = useCareerCatalog();
   const [parsing, setParsing] = useState(false);
   const [resumeResult, setResumeResult] = useState<ResumeResult | null>(null);
   const [resumeMsg, setResumeMsg] = useState("");
@@ -20,7 +22,11 @@ export default function ProfilePage() {
   if (!loaded) return <div className="p-10 text-center text-slate-400 font-bold">加载中…</div>;
 
   const p = data.profile;
-  const setP = (patch: Partial<typeof p>) => update((d) => ({ ...d, profile: { ...d.profile, ...patch } }));
+  const setP = (patch: Partial<typeof p>) => {
+    update((d) => ({ ...d, profile: { ...d.profile, ...patch } }));
+    setQuery({ ...query, major: patch.major ?? p.major, grade: patch.grade ?? p.grade, skills: patch.skills ?? p.skills });
+  };
+  const skillOptions = careerAdvice({major:p.major,grade:p.grade},catalog).roles.flatMap(r=>r.skills);
   const toggleIn = (arr: string[], v: string) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,14 +77,14 @@ export default function ProfilePage() {
       <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="hero-title text-3xl md:text-5xl text-center">
         我的档案<span className="text-violet-500">.</span>
       </motion.h1>
-      <p className="mt-2 text-center text-slate-500 text-sm">专业+年级必填，其余可传简历自动识别。数据只存在你本设备{cloudStatus === "已同步" ? "，并已同步云端" : ""}。</p>
+      <p className="mt-2 text-center text-slate-500 text-sm">这里保存个人技能与投递记录；招聘数据通过服务端动态刷新。{cloudStatus}。</p>
 
       {/* 专业与年级（必填置顶） */}
       <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mt-6 glass-strong rounded-3xl p-6 ring-2 ring-violet-200/60">
         <h2 className="font-black text-lg text-slate-800">专业与年级 <span className="text-xs font-black text-violet-500">必填，推荐全靠它</span></h2>
         <div className="mt-4 grid md:grid-cols-2 gap-4">
           <div>
-            <p className="text-xs font-black text-slate-400 mb-2">专业方向</p>
+            <label className="text-xs font-black text-slate-400">专业（自由输入）<input className="career-input mt-2 mb-3" value={catalog.majors.find(m=>m.id===p.major)?.label ?? p.major} maxLength={80} onChange={e=>setP({major:e.target.value})}/></label>
             <div className="flex flex-wrap gap-2">
               {majors.map((m) => (
                 <button key={m.id} onClick={() => setP({ major: m.id })}
@@ -176,7 +182,7 @@ export default function ProfilePage() {
             className="flex-1 px-4 py-2.5 rounded-2xl bg-white/80 ring-1 ring-slate-200 focus:ring-2 focus:ring-violet-400 outline-none text-sm font-bold"
           />
         </div>
-        <ChipGroup items={Array.from(new Set([...skillPool, ...p.skills]))} selected={p.skills} onToggle={(v) => setP({ skills: toggleIn(p.skills, v) })} color="emerald" />
+        <ChipGroup items={Array.from(new Set([...skillOptions, ...p.skills]))} selected={p.skills} onToggle={(v) => setP({ skills: toggleIn(p.skills, v) })} color="emerald" />
       </Section>
 
       {/* 证书 */}
@@ -189,41 +195,7 @@ export default function ProfilePage() {
         <ChipGroup items={directionPool} selected={p.directions} onToggle={(v) => setP({ directions: toggleIn(p.directions, v) })} color="blue" />
       </Section>
 
-      {/* 云同步（折叠到底部） */}
-      <div className="mt-6 glass rounded-3xl p-5">
-        <button onClick={() => setShowSync(!showSync)} className="w-full flex items-center justify-between">
-          <span className="font-black text-sm text-slate-700">云端同步（换设备时用，可选）</span>
-          <span className="text-xs font-bold text-slate-400">{syncCode ? `已绑定 ${syncCode} · ${cloudStatus}` : "未开启"} {showSync ? "▲" : "▼"}</span>
-        </button>
-        {showSync && (
-          <div className="mt-4">
-            <div className="flex flex-col md:flex-row gap-2">
-              <input
-                value={codeInput}
-                onChange={(e) => setCodeInput(e.target.value.trim())}
-                placeholder="输入或生成一个同步码，如 YIN-ABC123"
-                className="flex-1 px-4 py-3 rounded-2xl bg-white/80 ring-1 ring-slate-200 text-sm font-bold outline-none focus:ring-2 focus:ring-violet-400"
-              />
-              <div className="flex gap-2">
-                <button onClick={() => setCodeInput("YIN-" + Math.random().toString(36).slice(2, 8).toUpperCase())} className="px-4 py-3 rounded-2xl bg-white/80 ring-1 ring-slate-200 text-sm font-black hover:bg-white">
-                  随机生成
-                </button>
-                <button
-                  onClick={async () => {
-                    if (!codeInput) return setSyncMsg("请先输入或生成同步码");
-                    setSyncMsg(await bindSyncCode(codeInput));
-                  }}
-                  className="px-5 py-3 rounded-2xl bg-violet-500 text-white text-sm font-black hover:scale-105 transition-transform"
-                >
-                  绑定
-                </button>
-              </div>
-            </div>
-            {syncMsg && <p className="mt-2 text-xs font-bold text-violet-600">{syncMsg}</p>}
-            <p className="mt-3 text-[11px] text-slate-400">另一台设备打开本站 → 档案 → 输入同一同步码即可恢复数据。</p>
-          </div>
-        )}
-      </div>
+      <div className="mt-6"><AccountPanel /></div>
     </div>
   );
 }

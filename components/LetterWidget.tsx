@@ -3,61 +3,27 @@
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserData } from "@/lib/store";
-import { majors, certs, companies } from "@/lib/data";
-import { upcomingEvents, daysLabel } from "@/lib/certUtils";
+import { useCareerCatalog } from "./CareerProvider";
+import { careerAdvice } from "@/lib/career/engine";
+
 
 /** 右下角书信：根据档案生成一封个性化建议信 */
 export default function LetterWidget() {
   const { data, loaded } = useUserData();
   const [open, setOpen] = useState(false);
+  const {query,catalog} = useCareerCatalog();
 
   const letter = useMemo(() => {
     if (!loaded) return null;
-    const p = data.profile;
-    const major = majors.find((m) => m.id === p.major);
-    const lines: string[] = [];
-
-    // 主线建议
-    if (p.major === "printing") {
-      lines.push("你在数字印刷方向，最顺的一条路是先抓住学校的普理司产业学院——那是送到手边的实习通道，别等资源凉了。主动找老师聊一次，比海投十份简历都有用。");
-    } else if (p.major === "packaging") {
-      lines.push("包装是印刷行业利润最稳的赛道。把结构设计（ArtiosCAD）练到能出完整盒型，你就超过了大多数应届生。");
-    } else {
-      lines.push("先把设计三件套和一门手艺练扎实，再谈方向。作品集比成绩单更能说话。");
-    }
-
-    // 语言
-    if (p.japanese !== "无") {
-      lines.push(`你日语已经到 ${p.japanese}，这是稀缺牌。日资印刷企业（凸版、DNP、利丰雅高）长期缺"懂印刷又会日语"的人，N2 考下来，选择权就完全不一样了。`);
-    } else {
-      lines.push("行业正在出海，外语是最划算的投资。英语四级是底线；如果在学日语，坚持下去，它是差异化王牌。");
-    }
-    if (p.english === "无") {
-      lines.push("提醒一句：英语四级还没过的话，这学期务必拿下——外企和外贸岗的简历关就靠它。");
-    }
-
-    // 考证
-    const next = upcomingEvents(certs)[0];
-    if (next) {
-      lines.push(`最近的考证节点：${next.cert.shortName}「${next.event.label}」${daysLabel(next.days)}${next.event.status === "官方公布" ? "（官方已定）" : "（按往届推算）"}，别忘了进考证中心看报名入口。`);
-    }
-
-    // 技能差距
-    const gaps = (major?.defaultSkills ?? []).filter((s) => !p.skills.some((us) => us.includes(s.slice(0, 2)) || s.includes(us)));
-    if (p.skills.length > 0 && gaps.length > 0) {
-      lines.push(`对照 ${major?.name ?? "专业"} 的核心技能，你还可以补：${gaps.slice(0, 3).join("、")}。在成长中心把它们点亮吧。`);
-    }
-
-    // 投递
-    if (data.favorites.length === 0) {
-      lines.push("企业库已经帮你按专业筛好了，去收藏几家顺眼的，追踪起来——机会是攒出来的。");
-    } else {
-      const s = companies.filter((c) => data.favorites.includes(c.id) && c.recommend === "S");
-      lines.push(`你已经收藏了 ${data.favorites.length} 家企业${s.length > 0 ? `，其中 ${s.map((x) => x.name).slice(0, 2).join("、")} 是重点推荐，优先投` : ""}。暑期实习≈半个 offer，别等秋招才开始。`);
-    }
-
-    return lines;
-  }, [data, loaded]);
+    const advice=careerAdvice(query,catalog);
+    return [
+      `当前关注：${query.major || "尚未填写专业"}。推荐是研究线索，不等于录用或晋升概率。`,
+      ...advice.plan.slice(0,2),
+      advice.missingSkills.length ? `可以优先补强：${advice.missingSkills.slice(0,4).join("、")}。用项目或实习经历证明，而非只列技能名词。` : "对照具体岗位公告准备技能证据；没有证据时不随意推荐证书。",
+      `已收藏 ${data.favorites.length} 个企业研究对象。投递前再次核实公告、日期、地点与要求。`,
+      "职业环境、晋升编制和往届录用背景请查看深度研究；没有公开资料的数字需要向企业询问，不根据学校名猜胜算。",
+    ];
+  }, [data.favorites.length, loaded, query, catalog]);
 
   if (!loaded) return null;
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- legacy Node CommonJS maintenance tool */
 // 简化中国国界 GeoJSON：降精度 + 抽稀，输出轻量 paths
 const fs = require("fs");
 const raw = JSON.parse(fs.readFileSync(__dirname + "/china-raw.json", "utf8"));

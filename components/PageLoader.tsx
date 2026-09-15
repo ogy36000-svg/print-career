@@ -9,9 +9,10 @@ export default function PageLoader() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    let active = true;
     // 每次会话只播一次
     if (sessionStorage.getItem("pc-loaded")) return;
-    setShow(true);
+    queueMicrotask(() => { if (active) setShow(true); });
     sessionStorage.setItem("pc-loaded", "1");
     let p = 0;
     const t = setInterval(() => {
@@ -22,7 +23,7 @@ export default function PageLoader() {
         setTimeout(() => setShow(false), 350);
       }
     }, 110);
-    return () => clearInterval(t);
+    return () => { active = false; clearInterval(t); };
   }, []);
 
   const dots = [

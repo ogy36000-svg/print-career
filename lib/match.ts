@@ -1,4 +1,4 @@
-import type { Company, UserData, Major } from "./types";
+import type { Company, UserData } from "./types";
 import { getMajor } from "./data";
 
 export interface MatchResult {

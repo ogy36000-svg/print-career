@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- legacy Node CommonJS maintenance tool */
 // 省级中国地图简化：每省抽稀到 ~120 点，精度 2 位
 const fs = require("fs");
 const raw = JSON.parse(fs.readFileSync(__dirname + "/china-full.json", "utf8"));
