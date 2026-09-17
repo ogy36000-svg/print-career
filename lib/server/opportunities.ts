@@ -38,7 +38,7 @@ export function createOpportunityService(transport: typeof fetch = fetch, clock:
         const attemptedAt=new Date(now).toISOString();
         const results=await Promise.allSettled(fixedUrls.map(url=>readPublicPage(url,transport)));
         failures=results.filter(r=>r.status==="rejected").length;
-        checkedAt=attemptedAt;
+        if (failures<fixedUrls.length) checkedAt=attemptedAt;
         results.forEach((result,i)=>{
           const url=fixedUrls[i];
           // Failed listing refresh retains its prior receipt; it never becomes newly checked.

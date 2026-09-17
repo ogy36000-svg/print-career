@@ -66,6 +66,7 @@ test("公开刷新合并并发、冷却缓存，失败保留旧核验时间且�
   assert.ok(calls>count);
   assert.equal(stale.items[0].checkedAt,a.items[0].checkedAt);
   assert.equal(stale.items[0].availability,"stale");
+  assert.equal(stale.checkedAt,a.checkedAt);
   await assert.rejects(()=>server.readPublicPage("https://evil.example/job",async()=>new Response("x")));
   await assert.rejects(()=>server.readPublicPage("https://gxulif.gxu.edu.cn/info/1508/11850.htm",async()=>new Response(null,{status:302,headers:{location:"https://evil.example"}})));
   await assert.rejects(()=>server.readPublicPage("https://gxulif.gxu.edu.cn/info/1508/11850.htm",async()=>new Response("x",{headers:{"content-length":"9999999"}})));
@@ -143,6 +144,15 @@ test("未知专业遇到全部来源失败也不宣称公开读取成功",async(
   const service=server.createOpportunityService(async()=>new Response("",{status:503}),()=>Date.parse("2026-09-17T00:00:00Z"));
   const response=await service({major:"天文学",grade:"3"},catalog,true);
   assert.ok(response.message.includes("暂时无法"));
+  assert.equal(response.checkedAt,null);
   assert.deepEqual(response.items,[]);
   assert.deepEqual(response.leads,[]);
+});
+test("数字媒体公告相关性不由泛视觉设计标题或正文建立",()=>{
+  const pure=moduleOrNull("../lib/career/opportunities.js");
+  assert.equal(pure.relevantLead({title:"包装公司视觉设计招聘",excerpt:"视觉设计项目"},"数字媒体技术",catalog),false);
+  assert.equal(pure.relevantLead({title:"交互设计实习",excerpt:"原型项目"},"数字媒体",catalog),true);
+  const candidate={title:"某集团2027校招",url:"https://job.tiangong.edu.cn/correcruit/content/id/12345.html",excerpt:"",checkedAt:"2026-09-17T00:00:00Z",status:"lead",sourceType:"学校"};
+  assert.equal(pure.detailLead(candidate,'<div class="zpnr">包装视觉设计</div>',"数字媒体",catalog,candidate.checkedAt),null);
+  assert.ok(pure.detailLead(candidate,'<div class="zpnr">招聘专业：数字媒体技术</div>',"数字媒体",catalog,candidate.checkedAt));
 });

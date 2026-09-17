@@ -53,7 +53,7 @@ export function opportunitiesForMajor(records: OpportunityRecord[], major: strin
 }
 export function relevantLead(lead: Pick<ResearchLead,"title"|"excerpt">, major: string, catalog: CareerCatalog): boolean {
   const profile = resolveMajor(major,catalog);
-  const terms = profile ? [...profile.aliases,...profile.tags] : [major.trim()];
+  const terms = profile ? [...profile.aliases,...profile.tags.filter(tag=>profile.id!=="digital-media" || tag!=="视觉设计")] : [major.trim()];
   const text = `${lead.title} ${lead.excerpt}`.normalize("NFKC").toLowerCase();
   return terms.some(t=>t.length>=2 && text.includes(t.normalize("NFKC").toLowerCase()));
 }
