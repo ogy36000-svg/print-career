@@ -17,6 +17,7 @@ export function recommendCompanies(employers: Employer[], query: CareerQuery, ca
   return employers.flatMap(employer => {
     const hits = employer.tags.filter(tag => major.tags.includes(tag));
     if (!hits.length) return [];
+    if (major.id === "digital-media" && !hits.some(tag => ["交互设计", "媒体制作"].includes(tag))) return [];
     const cityHit = Boolean(query.city?.trim() && employer.city.includes(query.city.trim()));
     const skills = employer.tags.filter(tag => query.skills?.some(skill => normalized(skill) === normalized(tag)));
     const reasons = [`能力方向交叉：${hits.join("、")}`];
@@ -43,10 +44,12 @@ export function careerAdvice(query: CareerQuery, catalog: CareerCatalog) {
   const plans: Record<string, string[]> = {
     "1": ["先了解目标职业的日常任务与工作环境", "选择两项专业基础能力完成课程项目", "收集真实岗位要求，记录来源而非急着堆证书"],
     "2": ["确定一条主方向，完成可展示的小项目", "补齐专业软件与实验/设备基础", "寻找短期见习，了解工作班制与指导机制"],
-    "3": ["收集5条可核验的目标岗位公告，对比真实要求", "围绕能力差距完成1个完整项目或实训案例", "联系学校实习资源，核实导师、岗位与劳动条件", "按老师建议推进英语六级；是否是投递门槛以岗位公告为准"],
+    "3": ["收集5条可核验的目标岗位公告，对比真实要求", "完成1个完整项目或实训案例", "联系学校实习资源，核实导师、岗位与劳动条件"],
     "4": ["按报名截止日安排投递，保留公告和简历版本", "用项目证据准备面试，确认工作地点和培养计划", "每周更新投递记录与跟进日期", "考研与就业并行比较：先查目标岗位学历要求与招生目录"],
   };
-  return {roles, missingSkills, certificates: major?.certificates ?? [], plan: major ? plans[query.grade] ?? plans["3"] : ["当前目录尚未覆盖这个专业，请先联网检索官方岗位公告", "核实岗位职责后再确定技能与证书目标"]};
+  const plan = [...(plans[query.grade] ?? plans["3"])];
+  if (major?.id === "printing" && query.grade === "3") plan.push("印刷方向：按老师建议推进英语六级；投递门槛以具体公告为准");
+  return {roles, missingSkills, certificates: major?.certificates ?? [], plan: major ? plan : ["当前目录尚未覆盖这个专业，请先联网检索官方岗位公告", "核实岗位职责后再确定技能与证书目标"]};
 }
 
 export function promotionScenario(input: {machines: number | null; shifts: number; leadersPerShift: number; occupied: number | null}) {

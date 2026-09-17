@@ -19,7 +19,7 @@ export function buildBackupCatalog(): CareerCatalog {
   const old = (legacy as unknown as CompaniesData).companies.filter(c => !/（群体）|（方向）|岗位方向|技术工程师（方向）/.test(c.name) && !seedIds.has(c.id));
   const employers: Employer[] = old.map(c => {
     const text = [...c.jobs, ...c.skills, c.type].join(" ");
-    return {id:c.id, name:c.name, city:c.city, sector:c.type, website:safeUrl(c.website), rank:c.rank2025, rankYear:2025,
+    return {id:c.id, name:c.name, city:c.city, sector:c.type, description:c.desc?.trim().slice(0,2000) || c.type, website:safeUrl(c.website), rank:c.rank2025, rankYear:2025,
       tags:Object.entries(mappings).filter(([,pattern]) => pattern.test(text)).map(([tag]) => tag),
       evidence:{kind:"historical",url:safeUrl(c.website),checkedAt:null,note:`原版企业资料：${c.source}。${safeUrl(c.website) ? "" : "原版缺少可追溯来源链接。"}常见岗位仅用于方向研究，当前招聘与门槛未经重新核验。`}};
   });
@@ -28,6 +28,6 @@ export function buildBackupCatalog(): CareerCatalog {
 export const backupCatalog = buildBackupCatalog();
 export function asLegacyCompany(e: Employer): Company {
   return {fullName:e.name,district:"",province:"",lng:0,lat:0,address:`${e.city}（城市级，具体地址待核实）`,relation:"indirect",scale:"未核实",listed:"企业研究对象",rank2025:e.rankYear===2025 ? e.rank ?? null : null,jobs:[],skills:e.tags,lang:"具体语言要求以招聘公告为准",overseas:"未核实",recommend:"B",reason:e.evidence.note,tags:e.tags,
-    id:e.id,name:e.name,city:e.city,type:e.sector,website:e.website,desc:e.evidence.note, source:`${e.evidence.note} 来源：${e.evidence.url ?? "待补充"} 核验：${e.evidence.checkedAt ?? "待核实"}`,
+    id:e.id,name:e.name,city:e.city,type:e.sector,website:e.website,desc:e.description ?? e.sector, source:`${e.evidence.note} 来源：${e.evidence.url ?? "待补充"} 核验：${e.evidence.checkedAt ?? "待核实"}`,
   } as Company;
 }

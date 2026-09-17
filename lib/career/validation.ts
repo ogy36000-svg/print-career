@@ -40,6 +40,7 @@ export function validateCatalog(value: unknown): CareerCatalog {
   const employerIds = unique(employers);
   for (const item of employers) {
     const e = object(item); string(e.name, 200); string(e.city, 100); string(e.sector, 200); strings(e.tags);
+    if (e.description !== undefined) string(e.description, 2000);
     if (e.website !== null) url(e.website);
     const evidence = object(e.evidence);
     if (!["enterprise", "historical", "lead"].includes(String(evidence.kind))) throw new Error("企业证据类型错误");
