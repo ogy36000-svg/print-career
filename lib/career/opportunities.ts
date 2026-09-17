@@ -1,5 +1,5 @@
 import seed from "../../data/opportunity-sources.json";
-import type { CareerCatalog, OpportunityRecord, ResearchLead } from "./types";
+import type { CareerCatalog, OpportunityRecord, ResearchLead, ResearchTopic } from "./types";
 import { safeUrl } from "./validation";
 import { resolveMajor } from "./engine";
 
@@ -57,6 +57,18 @@ export function relevantLead(lead: Pick<ResearchLead,"title"|"excerpt">, major: 
   const text = `${lead.title} ${lead.excerpt}`.normalize("NFKC").toLowerCase();
   return terms.some(t=>t.length>=2 && text.includes(t.normalize("NFKC").toLowerCase()));
 }
+export function hasRecruitmentIntent(lead: Pick<ResearchLead,"title"|"excerpt">): boolean {
+  const title=lead.title.normalize("NFKC");
+  if (/实践教学|教学(?:体系|标准|研究)|人才培养方案|专业(?:目录|介绍|简介)|课程(?:目录|标准|设置)|访企拓岗|参观学习|实习.*(?:总结|考评|汇报|动员)|(?:召开|开展|举办).*(?:座谈|交流|推进会)/.test(title)) return false;
+  const excerpt=lead.excerpt.normalize("NFKC");
+  const hiringTitle=/招聘|校招|实习生/.test(title);
+  if (!hiringTitle && (/^\[PDF\]\s*\d+\s*印刷类/.test(title) || /专业(?:简介|介绍|代码)|培养(?:方案|目标)|课程设置|实践教学|教学标准/.test(excerpt))) return false;
+  return hiringTitle || /招聘(?:岗位|对象|要求|人数|信息|简章|职位)|(?:招聘|招募).{0,30}(?:实习生|应届|工程师|设计师)|任职要求|岗位职责|投递简历|简历投递/.test(excerpt)
+    || /(?:工程师|设计师|专员|助理|翻译员|设计实习)(?:[（(].*[）)])?$/.test(title.trim());
+}
+export function opportunityLead(lead: Pick<ResearchLead,"title"|"excerpt">, major: string, catalog: CareerCatalog, topic: ResearchTopic="internship"): boolean {
+  return relevantLead(lead,major,catalog) && (topic!=="internship" || hasRecruitmentIntent(lead));
+}
 export function extractListingCandidates(html: string, sourceUrl: string, checkedAt: string): ResearchLead[] {
   const clean = html.replace(/<(script|style|footer|nav)\b[^>]*>[\s\S]*?<\/\1>/gi,"");
   const seen = new Set<string>(); const leads: ResearchLead[] = [];
@@ -77,7 +89,7 @@ export function extractListingCandidates(html: string, sourceUrl: string, checke
   return leads;
 }
 export function extractListingLeads(html: string, sourceUrl: string, major: string, catalog: CareerCatalog, checkedAt: string): ResearchLead[] {
-  return extractListingCandidates(html,sourceUrl,checkedAt).filter(lead=>relevantLead(lead,major,catalog)).slice(0,20);
+  return extractListingCandidates(html,sourceUrl,checkedAt).filter(lead=>opportunityLead(lead,major,catalog)).slice(0,20);
 }
 export function detailLead(candidate: ResearchLead, html: string, major: string, catalog: CareerCatalog, checkedAt: string): ResearchLead | null {
   // Only the announcement body can establish relevance, never navigation or office addresses.
@@ -88,7 +100,7 @@ export function detailLead(candidate: ResearchLead, html: string, major: string,
   let tag;while((tag=tags.exec(html))){depth+=tag[0].startsWith("</") ? -1 : 1;if(depth===0){end=tag.index;break;}}
   if (end<0) return null;
   const text=htmlText(html.slice(start,end));
-  if (!relevantLead({title:"",excerpt:text},major,catalog)) return null;
+  if (!relevantLead({title:"",excerpt:text},major,catalog) || !hasRecruitmentIntent({title:candidate.title,excerpt:text})) return null;
   const profile=resolveMajor(major,catalog);const terms=profile ? [...profile.aliases,...profile.tags] : [major];
   const positions=terms.map(t=>text.toLowerCase().indexOf(t.toLowerCase())).filter(p=>p>=0);
   const offset=Math.max(0,Math.min(...positions)-100);

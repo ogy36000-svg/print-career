@@ -156,3 +156,28 @@ test("数字媒体公告相关性不由泛视觉设计标题或正文建立",()=
   assert.equal(pure.detailLead(candidate,'<div class="zpnr">包装视觉设计</div>',"数字媒体",catalog,candidate.checkedAt),null);
   assert.ok(pure.detailLead(candidate,'<div class="zpnr">招聘专业：数字媒体技术</div>',"数字媒体",catalog,candidate.checkedAt));
 });
+test("机会主题区分招聘公告与教学目录、访企和实习总结",()=>{
+  const pure=moduleOrNull("../lib/career/opportunities.js");
+  assert.equal(typeof pure.opportunityLead,"function");
+  const bad=[
+    // Exact observed provider titles; excerpts here are deliberately empty, not invented retrieval text.
+    {title:"[PDF] 新建数字印刷本科专业实践教学体系的构建与探索*",excerpt:""},
+    {title:"[PDF] 6803 印刷类",excerpt:""},
+    {title:"印刷包装与数字媒体学院开展实习工作总结考评会-西安理工印刷包装 ...",excerpt:""},
+    {title:"数字印刷工程",excerpt:""},
+    {title:"我院数字印刷工程专业师生赴惠州市道科包装材料有限公司参观学习",excerpt:""},
+    {title:"数字印刷技术专业人才培养方案.pdf",excerpt:"数字印刷专业课程与实习安排"},
+    {title:"数字印刷技术专业教学标准.pdf",excerpt:"印刷专业实习实训基本要求"},
+    {title:"职业教育专业目录",excerpt:"数字印刷技术专业"},
+    {title:"学院召开数字印刷专业实习总结会议",excerpt:"学生分享企业实习岗位的学习体会"},
+    {title:"学院赴印刷企业开展访企拓岗活动",excerpt:"了解企业招聘岗位和任职要求，洽谈实习基地建设"},
+  ];
+  for(const lead of bad){
+    assert.equal(pure.opportunityLead(lead,"数字印刷",catalog,"internship"),false,lead.title);
+    assert.equal(pure.opportunityLead(lead,"数字印刷",catalog,"career"),true,lead.title);
+    assert.equal(pure.opportunityLead(lead,"数字印刷",catalog,"competition"),true,lead.title);
+  }
+  assert.equal(pure.opportunityLead({title:"数字印刷工程师",excerpt:"岗位职责：数字印刷调试。任职要求：印刷工程；简历投递邮箱见公告"},"数字印刷",catalog,"internship"),true);
+  assert.equal(pure.opportunityLead({title:"某公司2027校园招聘",excerpt:"招聘岗位：印刷工艺工程师；招聘对象：2027届印刷工程本科生"},"数字印刷",catalog,"internship"),true);
+  assert.equal(pure.opportunityLead({title:"某公司公告",excerpt:"招聘印尼语实习生，岗位职责包括国际运营，投递简历"},"印尼语",catalog,"internship"),true);
+});

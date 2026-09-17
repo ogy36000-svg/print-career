@@ -1,5 +1,5 @@
 import { researchInput } from "@/lib/career/research";
-import { relevantLead } from "@/lib/career/opportunities";
+import { opportunityLead } from "@/lib/career/opportunities";
 import { backupCatalog } from "@/lib/career/backup";
 import { loadOpportunities } from "@/lib/server/opportunities";
 import { ResearchError, searchResearch } from "@/lib/server/research";
@@ -26,7 +26,7 @@ export async function POST(request:Request) {
     const bundle=await searchResearch(input,request);
     const response=await loadOpportunities(query,backupCatalog);
     const seen=new Set(response.leads.map(l=>l.url));
-    const leads=[...response.leads,...bundle.leads.filter(l=>relevantLead(l,query.major,backupCatalog) && !seen.has(l.url))];
+    const leads=[...response.leads,...bundle.leads.filter(l=>opportunityLead(l,query.major,backupCatalog,input.topic) && !seen.has(l.url))];
     return Response.json({...response,leads,checkedAt:bundle.checkedAt,cached:bundle.cached,message:"已加入公开来源检索线索，请打开公告核实职责、对象与投递状态。"},{headers});
   } catch(error){return Response.json({error:error instanceof ResearchError ? error.message : "来源检索暂不可用"},{status:error instanceof ResearchError ? error.status : 500,headers});}
 }

@@ -16,12 +16,13 @@ export function researchInput(value: unknown): ResearchInput {
   return {major: text(v.major, true), company: text(v.company, false), topic: v.topic as ResearchInput["topic"]};
 }
 export function buildResearchQuery(input: ResearchInput, catalog: CareerCatalog) {
-  const topics = {internship:"(实习 OR 校园招聘 OR 招聘)",career:"(工艺 OR 培养 OR 晋升 OR 年报)",competition:"(校园招聘 OR 培养方案 OR 研究生招生目录)"};
+  const topics = {internship:"(实习生 OR 实习招聘 OR 校园招聘 OR 校招 OR 招聘岗位)",career:"(工艺 OR 培养 OR 晋升 OR 年报)",competition:"(校园招聘 OR 培养方案 OR 研究生招生目录)"};
   const major = resolveMajor(input.major, catalog);
   const company = catalog.employers.find(e => input.company && (e.name === input.company || e.name.includes(input.company)));
   const domains = ["gov.cn", "edu.cn", "gzrecruit.com"];
   if (company?.website) domains.push(new URL(company.website).hostname.replace(/^www\./, ""));
-  const subject = input.company ? `${input.company} (${(major?.tags.slice(0, 2) ?? [input.major]).join(" OR ")})` : input.major;
+  const terms=input.topic==="internship" && major ? [...new Set([input.major,...major.aliases.slice(0,3),...major.tags.filter(t=>major.id!=="digital-media" || t!=="视觉设计").slice(0,4)])] : major?.tags.slice(0,2) ?? [input.major];
+  const subject = input.company ? `${input.company} (${terms.join(" OR ")})` : input.topic==="internship" ? `(${terms.join(" OR ")})` : input.major;
   return `${subject} ${topics[input.topic]} (${domains.map(d => `site:${d}`).join(" OR ")})`.slice(0, 500);
 }
 function sourceType(url: string, catalog: CareerCatalog): string | null {

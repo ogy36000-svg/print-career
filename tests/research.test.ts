@@ -34,3 +34,10 @@ test("损坏或过期缓存不能伪装成新的联网结果", () => {
   const bundle = {query:"q",checkedAt:"2026-09-14T00:00:00Z",expiresAt:"2026-09-15T00:00:00Z",leads:[],creditsUsed:2,cached:false};
   assert.ok(validateResearchBundle(bundle, catalog));
 });
+test("机会检索扩展具体专业岗位并用实习生而非裸实习召回",()=>{
+  const query=buildResearchQuery(researchInput({major:"数字印刷",topic:"internship"}),catalog);
+  assert.ok(query.includes("实习生"));
+  assert.ok(query.includes("印刷工程"));
+  assert.ok(query.includes("色彩管理"));
+  assert.ok(!query.includes("实习 OR"));
+});
