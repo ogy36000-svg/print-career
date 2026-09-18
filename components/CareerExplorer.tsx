@@ -1,41 +1,185 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
-import { careerAdvice, recommendCompanies, recommendVacancies, resolveMajor } from "@/lib/career/engine";
-import { jobSearchLinks } from "@/lib/data";
-import { useUserData } from "@/lib/store";
+import { recommendCompanies, recommendVacancies } from "@/lib/career/engine";
+import { asLegacyCompany } from "@/lib/career/backup";
 import { useCareerCatalog } from "./CareerProvider";
+import WorkspaceContext from "./WorkspaceContext";
+import CompanyCard from "./CompanyCard";
+import OpportunityList from "./OpportunityList";
 import ResearchPanel from "./ResearchPanel";
-import CareerAnalysis from "./CareerAnalysis";
-
 export default function CareerExplorer() {
-  const {catalog,query,setQuery,loading,refresh,mode,message,checkedAt} = useCareerCatalog();
-  const {data,update} = useUserData();
-  const [showAll,setShowAll] = useState(false);const [topOnly,setTopOnly] = useState(false);
-  const [skillsText,setSkillsText] = useState(query.skills?.join("，") ?? "");
-  const major = resolveMajor(query.major,catalog);
-  const matches = recommendCompanies(catalog.employers,query,catalog);
-  const filtered = topOnly && major?.id === "printing" ? matches.filter(m => m.employer.rank && m.employer.rank <= 30) : matches;
-  const vacancies = recommendVacancies(catalog.vacancies,query,catalog);
-  const advice = careerAdvice(query,catalog);
-  const cities = [...new Set(matches.map(m => m.employer.city))];
-  const favorite = (id:string) => update(d => ({...d,favorites:d.favorites.includes(id) ? d.favorites.filter(x => x!==id) : [...d.favorites,id]}));
-  return <div className="career-home max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12">
-    <section className="career-hero"><div><p className="section-kicker">CAREER COMPASS · 实习与职业研究</p><h1>专业不设限，<br/><span>机会有依据。</span></h1><p className="mt-5 max-w-xl text-slate-600 leading-relaxed">从你的专业出发，找对口岗位，也发现跨行业机会。企业、技能与职业路径一起看，资料的新旧与来源说清楚。</p><div className="mt-5 flex flex-wrap gap-3"><a href="#opportunities" className="career-primary">查看对口机会 ↓</a><a href="#research" className="career-secondary">联网查新资料 ↗</a></div></div><aside className="hero-evidence"><span className="text-xs tracking-widest font-bold text-slate-500">从方向到行动</span><h2>不只看公司名。</h2><p>专业 → 岗位能力 → 企业机会</p><div className="mt-5 space-y-3 text-sm"><div>01　匹配岗位，而非只匹配行业</div><div>02　来源可查，过期信息不冒充在招</div><div>03　看实习，也看工作环境与成长</div></div><div className="mt-5 border-t border-slate-200 pt-4 text-xs text-slate-500">珠江啤酒：包装产业交叉线索<br/>凹版印刷具体岗位仍需核验</div></aside></section>
-
-    <section className="mt-8 glass-strong rounded-3xl p-5 md:p-7" aria-label="专业推荐设置"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-black">从你的专业开始</h2><button className="text-sm font-bold text-blue-700" onClick={() => {setSkillsText(data.profile.skills.join("，"));setQuery({major:resolveMajor(data.profile.major,catalog)?.label ?? data.profile.major,grade:data.profile.grade,city:query.city,skills:data.profile.skills});}}>使用我的档案 →</button></div><div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-4"><label className="sm:col-span-2 text-xs font-bold text-slate-500">专业（自由输入）<input className="career-input mt-2" aria-label="专业（自由输入）" value={query.major} maxLength={80} onChange={e => setQuery({...query,major:e.target.value})} placeholder="数字印刷、计算机、造纸、土木…"/></label><label className="text-xs font-bold text-slate-500">年级<select aria-label="年级" className="career-input mt-2" value={query.grade} onChange={e => setQuery({...query,grade:e.target.value})}>{["1","2","3","4"].map(g => <option key={g} value={g}>大{["","一","二","三","四"][Number(g)]}</option>)}</select></label><label className="text-xs font-bold text-slate-500">意向城市（可留空）<input className="career-input mt-2" aria-label="意向城市" maxLength={40} value={query.city ?? ""} onChange={e => setQuery({...query,city:e.target.value})} placeholder="例如：广州"/></label></div><div className="mt-3 flex flex-wrap gap-2">{["数字印刷工程","包装工程","制浆造纸","软件工程","机械工程","市场营销"].map(text => <button key={text} className="research-tab" onClick={() => setQuery({...query,major:text})}>{text}</button>)}</div><label className="mt-4 block text-xs font-bold text-slate-500">已有技能（逗号分隔，选填）<input className="career-input mt-2" aria-label="已有技能" value={skillsText} maxLength={600} onChange={e => {setSkillsText(e.target.value);setQuery({...query,skills:e.target.value.split(/[，,、]/).map(s=>s.trim()).filter(Boolean)});}} placeholder="色彩管理，印前，设备维护…"/></label><p className="mt-3 text-xs text-slate-500">{major ? `识别为「${major.label}」，按能力标签联动。` : query.major.trim() ? "当前基础目录尚未覆盖该专业；不会用不对口企业填满页面，可继续联网检索。" : "填写专业后开始匹配。"} 推荐关系不等于录用概率。</p></section>
-
-    <div className="catalog-status mt-4" role="status"><span className="data-badge">{loading ? "检查中" : mode === "cloud" ? "云端目录" : mode === "stale" ? "上次目录" : "基础目录 / 备份"}</span><div className="flex-1 min-w-0"><p className="text-xs text-slate-600">{message}</p><p className="mt-1 text-xs text-slate-400">目录版本 {catalog.updated} · {catalog.employers.length} 个企业研究对象{checkedAt ? ` · 上次读取 ${new Date(checkedAt).toLocaleTimeString("zh-CN")}` : ""}</p></div><button className="career-secondary text-xs" disabled={loading} onClick={() => void refresh(true)}>刷新目录 ↻</button></div>
-
-    <section id="opportunities" className="mt-10"><div className="flex flex-wrap justify-between items-end gap-3"><div><p className="section-kicker">MATCHED OPPORTUNITIES</p><h2 className="mt-2 text-2xl font-black">{query.major || "你的专业"}的企业机会</h2><p className="mt-2 text-sm text-slate-500">匹配 {filtered.length} 个企业研究对象 · 可核验有效职位 {vacancies.length} 条</p></div>{major?.id === "printing" && <label className="flex items-center gap-2 text-sm text-slate-600"><input type="checkbox" checked={topOnly} onChange={e=>setTopOnly(e.target.checked)}/>仅看原版2025印刷榜单前30</label>}</div>
-      <div className="mt-5 grid md:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="employer-grid">{filtered.slice(0,showAll ? filtered.length : 12).map(({employer:e,reasons}) => <article className="opportunity-card" key={e.id}><div className="flex items-start justify-between gap-3"><span className="employer-mark">{e.name.slice(0,2)}</span><button aria-label={`收藏${e.name}`} className="text-xl text-orange-600" onClick={()=>favorite(e.id)}>{data.favorites.includes(e.id) ? "★" : "☆"}</button></div><span className="mt-4 inline-block text-xs font-bold text-amber-800">企业研究对象 · 非在招职位</span><h3 className="mt-2 text-lg font-black">{e.name}</h3><p className="mt-1 text-xs text-slate-500">{e.city} · {e.sector}</p>{e.rank && <p className="mt-2 text-xs text-blue-700">原版{e.rankYear}印刷榜单 #{e.rank} · 不是招聘排名</p>}<div className="mt-3 flex flex-wrap gap-1">{e.tags.filter(t=>major?.tags.includes(t)).slice(0,4).map(t=><span className="capability-tag" key={t}>{t}</span>)}</div><p className="mt-3 text-xs leading-relaxed text-slate-600">{reasons.join("；")}</p><p className="mt-2 text-xs text-slate-400">资料核验：{e.evidence.checkedAt ?? "待重新核验"}</p><div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-3 text-xs font-bold"><Link href={`/companies/${e.id}`} className="text-orange-600">研究详情 →</Link>{e.website && <a href={e.website} target="_blank" rel="noreferrer" className="text-blue-700">官网 ↗</a>}<a href={jobSearchLinks(`${e.name} ${major?.tags[0] ?? query.major}`)[0].url} target="_blank" rel="noreferrer" className="text-slate-600">平台搜索 ↗</a></div></article>)}</div>
-      {!filtered.length && <div className="mt-5 empty-state"><h3 className="font-bold">当前目录没有对口企业</h3><p className="mt-2 text-sm text-slate-500">可继续自由输入，并在下方联网研究中寻找官方公告。目录没有覆盖，不等于这个专业没有机会。</p><a href="#research" className="mt-3 inline-block text-blue-700 text-sm font-bold">去联网研究 ↓</a></div>}{filtered.length>12 && <button className="career-secondary mt-5" onClick={()=>setShowAll(!showAll)}>{showAll ? "收起列表" : `展开全部 ${filtered.length} 个企业`}</button>}
-      {!!vacancies.length && <div className="mt-6 space-y-3">{vacancies.map(v=><a key={v.id} href={v.sourceUrl} target="_blank" rel="noreferrer" className="research-lead block"><span className="text-xs text-emerald-700 font-bold">已核验有效职位</span><h3 className="mt-1 font-bold">{v.title} · {catalog.employers.find(e=>e.id===v.employerId)?.name}</h3><p className="mt-2 text-sm text-slate-600">{v.city} · {v.requirements.join("；")}</p><p className="mt-2 text-xs text-slate-400">核验 {v.checkedAt} · 有效至 {v.expiresAt} · 打开公告 ↗</p></a>)}</div>}
-    </section>
-
-    <div className="mt-10"><ResearchPanel key={query.major}/></div><div className="mt-6"><CareerAnalysis/></div>
-    <section className="mt-6 grid lg:grid-cols-2 gap-5"><div className="glass-strong rounded-3xl p-5 md:p-7"><p className="section-kicker">NEXT STEPS · 行动路线</p><h2 className="mt-2 text-xl font-black">按你的阶段，补齐可证明的能力。</h2><div className="mt-4 flex flex-wrap gap-2">{advice.missingSkills.map(s=><span className="capability-tag" key={s}>待补强：{s}</span>)}</div><ul className="mt-5 space-y-3">{advice.plan.map(step=>{const key=`${query.major}:${query.grade}:${step}`;return <li key={step}><label className="flex gap-3 text-sm text-slate-600"><input type="checkbox" checked={data.taskDone.includes(key)} onChange={()=>update(d=>({...d,taskDone:d.taskDone.includes(key) ? d.taskDone.filter(x=>x!==key):[...d.taskDone,key]}))}/><span>{step}</span></label></li>;})}</ul></div><div className="glass rounded-3xl p-5 md:p-7"><h2 className="text-xl font-black">证书目标，而非万能门票。</h2><p className="mt-3 text-sm text-slate-600">岗位卡只展示公告里明确要求的资格；未取得具体岗位证据时，不声称“没六级就没人看”。</p>{advice.certificates.length ? advice.certificates.map(c=><div key={c.name} className="mt-4"><a className="font-bold text-sm text-blue-700" href={c.sourceUrl} target="_blank" rel="noreferrer">{c.name} ↗</a><p className="mt-1 text-xs text-slate-500">{c.kind === "goal" ? "个人提升目标" : "按岗位选考"} · {c.reason}</p></div>):<p className="mt-4 text-sm text-slate-500">当前没有足够岗位证据推荐特定证书，先用项目与实习证明能力。</p>}<Link className="mt-4 inline-block text-sm text-blue-700 font-bold" href="/profile">补充档案 / 记录投递 →</Link></div></section>
-    <details className="mt-6 glass rounded-3xl p-5"><summary className="cursor-pointer font-bold">简版机会分布 · {cities.length} 个城市/地区</summary><div className="mt-4 flex flex-wrap gap-2">{cities.map(city=><button className="research-tab" key={city} onClick={()=>setQuery({...query,city})}>{city} · {matches.filter(m=>m.employer.city===city).length}</button>)}</div><p className="mt-3 text-xs text-slate-500">城市级研究对象分布，不是精确工作地址；实际地点需查看岗位公告。</p></details>
-    <footer className="mt-10 text-center text-xs text-slate-500">专业推荐辅助工具 · 岗位以官方公告为准 · 不保证录用或晋升</footer>
-  </div>;
+  const {
+    catalog,
+    query,
+    profile,
+    ready,
+    openGuide,
+    workspace,
+    loading,
+    refresh,
+    searchMore,
+    message,
+    checkedAt,
+  } = useCareerCatalog();
+  const companies = recommendCompanies(catalog.employers, query, catalog);
+  const vacancies = recommendVacancies(catalog.vacancies, query, catalog);
+  if (!profile)
+    return (
+      <div className="workspace neutral-workspace">
+        <p className="eyebrow">实习与职业发展</p>
+        <h1>从你的专业，走向下一步</h1>
+        <p className="muted">整理值得关注的公告、企业与准备事项。</p>
+        <button
+          className="career-primary"
+          disabled={!ready}
+          onClick={openGuide}
+        >
+          {ready ? "开始设置" : "正在准备工作台…"}
+        </button>
+        <div className="neutral-sections" aria-hidden="true">
+          <span>发现机会</span>
+          <span>了解方向</span>
+          <span>积累经历</span>
+        </div>
+      </div>
+    );
+  return (
+    <div className="workspace">
+      <WorkspaceContext />
+      <header className="workspace-heading">
+        <div>
+          <p className="eyebrow">我的工作台</p>
+          <h1>实习与职业机会</h1>
+          <p className="muted">
+            {workspace.stage}，从一份公告和一个具体行动开始。
+          </p>
+        </div>
+        <button
+          className="career-secondary"
+          disabled={loading}
+          onClick={() => void refresh(true)}
+        >
+          {loading ? "正在读取…" : "更新资料 ↻"}
+        </button>
+      </header>
+      <div className="workspace-columns">
+        <div className="workspace-main">
+          <section>
+            <div className="section-heading">
+              <h2>公开公告与职业参考</h2>
+              <span className="fine-print">
+                {checkedAt
+                  ? `最近读取 ${new Date(checkedAt).toLocaleDateString("zh-CN")}`
+                  : "从学校与企业公开来源整理"}
+              </span>
+            </div>
+            <p className="fine-print section-intro">
+              届别、发布时间和具体要求见每条公告；往期信息可用于了解岗位。
+            </p>
+            {message && (
+              <p role="alert" className="notice">
+                {message} <Link href="/profile">账号与档案 →</Link>
+              </p>
+            )}
+            <OpportunityList />
+            {loading && (
+              <p role="status" className="fine-print">
+                正在读取公开来源，稍等片刻。
+              </p>
+            )}
+            <button
+              className="source-search"
+              disabled={loading}
+              onClick={() => void searchMore()}
+            >
+              搜索更多公告 ↗
+            </button>
+          </section>
+          {!!vacancies.length && (
+            <section className="section-space">
+              <h2>有效期内的职位</h2>
+              {vacancies.map((v) => (
+                <a
+                  className="notice-card"
+                  key={v.id}
+                  href={v.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <h3>{v.title}</h3>
+                  <p>
+                    {v.city} · {v.requirements.join("；")}
+                  </p>
+                  <span className="fine-print">
+                    有效至 {v.expiresAt} · 查看职位 ↗
+                  </span>
+                </a>
+              ))}
+            </section>
+          )}
+          <section className="section-space">
+            <div className="section-heading">
+              <h2>了解相关企业</h2>
+              <Link href="/companies" className="text-link">
+                全部企业 →
+              </Link>
+            </div>
+            <p className="fine-print section-intro">
+              从业务和工作内容判断方向，再查看具体招聘要求。
+            </p>
+            <div className="company-grid" data-testid="employer-grid">
+              {companies.slice(0, 6).map(({ employer }) => (
+                <CompanyCard
+                  key={employer.id}
+                  company={asLegacyCompany(employer)}
+                />
+              ))}
+            </div>
+            {!companies.length && (
+              <div className="empty-state">
+                <h3>还没有收录这个专业的相关企业</h3>
+                <p>可以搜索公开公告，从原文中的企业和岗位继续了解。</p>
+                <a href="#research" className="text-link">
+                  查找公开资料 ↓
+                </a>
+              </div>
+            )}
+          </section>
+          <div className="section-space">
+            <ResearchPanel key={query.major} />
+          </div>
+        </div>
+        <aside className="workspace-sidebar">
+          <section className="side-note">
+            <p className="eyebrow">{workspace.stage}</p>
+            <h2>这一阶段，先做什么</h2>
+            <ol>
+              {workspace.nextSteps.slice(0, 3).map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+            <Link href="/growth" className="text-link">
+              打开我的行动清单 →
+            </Link>
+          </section>
+          <section className="sidebar-links">
+            <h2>把方向看具体</h2>
+            <Link href="/roles">
+              职业方向 <span>日常工作与能力 →</span>
+            </Link>
+            <Link href="/industry">
+              行业与地区 <span>产业方向与海外视角 →</span>
+            </Link>
+            <Link href="/certs">
+              学习目标 <span>按方向安排准备 →</span>
+            </Link>
+          </section>
+          <p className="fine-print">
+            公开来源在页面可见时定期检查。最近读取时间与公告发布时间分别展示。
+          </p>
+        </aside>
+      </div>
+      <footer className="workspace-footer">职景 · 把了解变成下一步</footer>
+    </div>
+  );
 }

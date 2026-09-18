@@ -1,133 +1,113 @@
 "use client";
-
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { industryData as bundled } from "@/lib/data";
-import type { IndustryData } from "@/lib/types";
-import { useRemoteData } from "@/lib/remote";
-import RealMap from "@/components/RealMap";
+import { useMemo } from "react";
+import { useCareerCatalog } from "@/components/CareerProvider";
+import WorkspaceContext from "@/components/WorkspaceContext";
+import OpportunityList from "@/components/OpportunityList";
 import ResearchPanel from "@/components/ResearchPanel";
-import {useCareerCatalog} from "@/components/CareerProvider";
-
+import RealMap from "@/components/RealMap";
+import { opportunityRegions } from "@/lib/career/regions";
+import type { Company } from "@/lib/types";
+const NO_COMPANIES: Company[] = [];
 export default function IndustryPage() {
-  const {query}=useCareerCatalog();
-  const { data, remote } = useRemoteData<IndustryData>("industry", bundled);
-  const [showTerms, setShowTerms] = useState(false);
-
-  const cn = data.overseas.china ?? { lat: 35, lng: 105 };
-  const destMarkers = data.overseas.destinations
-    .filter((d) => d.lat !== undefined)
-    .map((d) => ({ name: `${d.name} · ${d.companies}`, lat: d.lat!, lng: d.lng!, color: "#2563eb" }));
-  const arcs = data.overseas.destinations
-    .filter((d) => d.lat !== undefined)
-    .map((d) => ({ from: [cn.lat, cn.lng] as [number, number], to: [d.lat!, d.lng!] as [number, number], color: "#f43f5e" }));
-
+  const { workspace, profile, opportunities } = useCareerCatalog();
+  const regions = useMemo(
+    () => opportunityRegions(opportunities?.items ?? []),
+    [opportunities?.items],
+  );
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:py-12">
-      <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="hero-title text-3xl md:text-5xl text-center">
-        行业趋势<span className="text-cyan-500">.</span>
-      </motion.h1>
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mt-3 max-w-2xl mx-auto text-center text-sm text-slate-500">
-        内卷、出海、数码化、绿色化。每条趋势附新闻源，点进去看原文自己判断。
-      </motion.p>
-      <p className="mt-2 text-center text-[11px] text-slate-400">数据更新于 {data.updated}{remote ? "（已同步最新版）" : ""}</p>
-
-      <p className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900">下方为原版印刷行业历史参考资料，不是实时行业统计，也不适用于所有专业。当前专业「{query.major}」的新资料请用联网研究核查，尤其不要把历史预测当成今年事实。</p>
-      <div className="mt-6"><ResearchPanel key={query.major} initialTopic="career"/></div>
-      {/* 趋势卡片（可点击信源） */}
-      <div className="mt-8 grid md:grid-cols-2 gap-5">
-        {data.trends.map((t, i) => (
-          <motion.div
-            key={t.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.06 }}
-            className="glass-strong rounded-3xl p-6 flex flex-col"
-          >
-            <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full text-white ${t.badge === "机会" ? "bg-emerald-500" : t.badge === "趋势" ? "bg-blue-500" : "bg-orange-500"}`}>{t.badge}</span>
-              <h2 className="font-black text-lg text-slate-800">{t.title}</h2>
-            </div>
-            <p className="mt-3 text-sm text-slate-600 leading-relaxed">{t.summary}</p>
-            <div className="mt-3 rounded-2xl bg-gradient-to-r from-orange-50/80 to-rose-50/80 ring-1 ring-orange-100/50 p-3">
-              <p className="text-xs text-slate-600 leading-relaxed">{t.detail}</p>
-            </div>
-            {/* 信源链接 */}
-            {t.links && t.links.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
-                {t.links.map((l) => (
-                  <a key={l.url} href={l.url} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
-                    <span className="truncate">{l.title}</span>
-                    <span className="shrink-0">↗</span>
+    <div className="workspace">
+      <WorkspaceContext />
+      <header className="workspace-heading">
+        <div>
+          <p className="eyebrow">行业与地区</p>
+          <h1>看看专业通向哪里</h1>
+          <p className="muted">从业务内容、工作地点和项目方式了解你的选择。</p>
+        </div>
+      </header>
+      {profile && (
+        <>
+          <div className="content-columns">
+            <section className="panel">
+              <h2>{workspace.label}的行业方向</h2>
+              <ul className="reading-list">
+                {workspace.industry.map((s) => (
+                  <li key={s}>{s}</li>
+                ))}
+              </ul>
+              {!workspace.industry.length && (
+                <p className="muted">
+                  这个专业的行业介绍还在整理，可以先从公开资料了解。
+                </p>
+              )}
+              <div className="source-links">
+                {Array.from(
+                  new Set(workspace.directions.flatMap((r) => r.sourceUrls)),
+                ).map((url, i) => (
+                  <a key={url} href={url} target="_blank" rel="noreferrer">
+                    行业背景参考 {i + 1} ↗
                   </a>
                 ))}
               </div>
-            )}
-            <p className="mt-3 text-[10px] text-slate-400">来源：{t.source}</p>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* 出海真实地图 */}
-      <section className="mt-12">
-        <h2 className="hero-title text-2xl md:text-4xl text-center">产能出海<span className="text-blue-500">地图</span></h2>
-        <p className="mt-2 text-center text-sm text-slate-500">{data.overseas.note} · 真实地图可缩放，悬停看企业</p>
-        <div className="mt-6">
-          <RealMap
-            companies={[]}
-            view="world"
-            height={480}
-            extraMarkers={[
-              { name: "中国（制造基地）", lat: cn.lat, lng: cn.lng, color: "#f43f5e" },
-              ...destMarkers,
-            ]}
-            arcs={arcs}
-          />
-        </div>
-        <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-          {data.overseas.destinations.map((d, i) => (
-            <motion.div key={d.name} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
-              className="glass rounded-2xl p-4">
-              <p className="font-black text-sm text-slate-800">{d.name}</p>
-              <p className="mt-0.5 text-[10px] font-bold text-blue-500">{d.companies}</p>
-              <p className="mt-1.5 text-xs text-slate-500 leading-relaxed">{d.note}</p>
-            </motion.div>
-          ))}
-        </div>
-        <p className="mt-4 text-center text-xs text-slate-400">
-          出海岗位关键门槛：外语。英语是标配（东南亚/北美），日语对接日资体系，都能换来驻外补贴和更快的晋升通道。
-        </p>
-      </section>
-
-      {/* 印刷英语（默认折叠） */}
-      <section className="mt-12">
-        <div className="glass rounded-3xl p-6">
-          <button onClick={() => setShowTerms(!showTerms)} className="w-full flex items-center justify-between">
-            <div className="text-left">
-              <h2 className="font-black text-lg text-slate-800">印刷英语高频术语 <span className="text-xs font-bold text-slate-400">（外贸/设备方向用得着，可选看）</span></h2>
-            </div>
-            <span className="text-slate-400 font-black">{showTerms ? "收起 ▲" : "展开 ▼"}</span>
-          </button>
-          {showTerms && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <p className="mt-3 text-xs text-slate-500 leading-relaxed">{data.english.why}</p>
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-                {data.english.terms.map((t) => (
-                  <div key={t.en} className="rounded-2xl bg-white/70 p-3 text-center">
-                    <p className="font-black text-sm text-slate-800">{t.en}</p>
-                    <p className="mt-1 text-xs text-emerald-600 font-bold">{t.zh}</p>
-                  </div>
+            </section>
+            <section className="panel">
+              <h2>跨地区与海外视角</h2>
+              <ul className="reading-list">
+                {workspace.globalOutlook.map((s) => (
+                  <li key={s}>{s}</li>
                 ))}
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </section>
-
-      <p className="mt-10 text-center text-[11px] text-slate-400">来源：{data.sources.join("、")}</p>
+              </ul>
+              <p className="fine-print">
+                了解海外岗位时，可以询问工作语言、实际地点、指导安排和合同保障。
+              </p>
+            </section>
+          </div>
+          <section className="panel section-space">
+            <h2>公告中的城市与地区</h2>
+            <p className="muted">
+              地图标记城市、省份或国家的地理中心，具体岗位地点请查看来源公告。
+            </p>
+            <div className="mt-4">
+              <RealMap
+                companies={NO_COMPANIES}
+                extraMarkers={regions}
+                view="world"
+                height={360}
+              />
+            </div>
+            {!regions.length && (
+              <p className="fine-print">
+                现有资料尚未明确可标注的地区，可以继续查找公开公告。
+              </p>
+            )}
+            <div className="region-sources">
+              {regions.map((region) => (
+                <div key={region.name}>
+                  <h3>{region.name}</h3>
+                  <div className="source-links">
+                    {region.sources.map((source) => (
+                      <a
+                        key={source.url}
+                        href={source.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {source.title} ↗
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+          <section className="section-space">
+            <h2>相关公开公告</h2>
+            <OpportunityList />
+          </section>
+          <div className="section-space">
+            <ResearchPanel key={workspace.label} initialTopic="career" />
+          </div>
+        </>
+      )}
     </div>
   );
 }

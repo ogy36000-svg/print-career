@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Nav from "@/components/Nav";
-import PageLoader from "@/components/PageLoader";
+import OnboardingGuide from "@/components/OnboardingGuide";
+import { brand } from "@/lib/brand";
 import LetterWidget from "@/components/LetterWidget";
 import { CareerProvider } from "@/components/CareerProvider";
 import { UserDataProvider } from "@/lib/store";
 
 export const metadata: Metadata = {
-  title: "印向未来 · 实习求职导航",
+  title: `${brand.name} · ${brand.descriptor}`,
   description: "根据你的专业和年级，推荐实习企业、岗位和考证规划",
 };
 
@@ -21,12 +22,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="zh-CN" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        <UserDataProvider><CareerProvider>
-        <PageLoader />
-        <Nav />
-        <LetterWidget />
-        <main className="flex-1 pb-24 md:pb-0 md:pt-20">{children}</main>
-        </CareerProvider></UserDataProvider>
+        <UserDataProvider>
+          <CareerProvider>
+            <OnboardingGuide />
+            <Nav />
+            <LetterWidget />
+            <main className="flex-1 pb-24 md:pb-0">{children}</main>
+          </CareerProvider>
+        </UserDataProvider>
       </body>
     </html>
   );
