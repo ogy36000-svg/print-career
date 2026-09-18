@@ -12,8 +12,8 @@ const colors: Record<string, string> = {
 };
 
 export default function CompanyStatus({ companyId }: { companyId: string }) {
-  const { data, update } = useUserData();
-  const current = data.companyStatus[companyId];
+  const { data, update, loaded } = useUserData();
+  const current = loaded ? data.companyStatus[companyId] : undefined;
 
   return (
     <div className="mt-4 bg-white rounded-3xl p-5 ring-1 ring-black/5">
@@ -22,6 +22,7 @@ export default function CompanyStatus({ companyId }: { companyId: string }) {
         {statuses.map((s) => (
           <button
             key={s}
+            disabled={!loaded}
             onClick={() =>
               update((d) => ({
                 ...d,
@@ -37,6 +38,7 @@ export default function CompanyStatus({ companyId }: { companyId: string }) {
         ))}
         {current && (
           <button
+            disabled={!loaded}
             onClick={() =>
               update((d) => {
                 const next = { ...d.companyStatus };

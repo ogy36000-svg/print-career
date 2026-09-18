@@ -12,7 +12,7 @@ const readLocal = (id: string | null): UserData => {
 };
 interface Store {
   data: UserData; update: (fn:(d:UserData)=>UserData)=>void; loaded: boolean;
-  user: User | null; cloudStatus: string; consent: boolean;
+  user: User | null; cloudStatus: string; consent: boolean; sessionGeneration: number;
   enableCloudSync:()=>Promise<string>; signOut:()=>Promise<void>;
 }
 const Context = createContext<Store | null>(null);
@@ -22,6 +22,7 @@ export function UserDataProvider({children}: {children:React.ReactNode}) {
   const [user,setUser] = useState<User | null>(null);
   const [consent,setConsent] = useState(false);
   const [owner,setOwner] = useState<string | null>(null);
+  const [sessionGeneration,setSessionGeneration] = useState(0);
   const [cloudStatus,setCloudStatus] = useState("本地档案，未上传");
   const epoch = useRef(0);
   const saveId = useRef(0);
@@ -37,7 +38,7 @@ export function UserDataProvider({children}: {children:React.ReactNode}) {
       const id = ++epoch.current;
       sessionOwner.current=nextUser?.id ?? null;
       saveId.current++;
-      setLoaded(false);setConsent(false);setOwner(null);setUser(nextUser);
+      setLoaded(false);setData(emptyUserData);setConsent(false);setOwner(null);setUser(nextUser);setSessionGeneration(id);
       let next = readLocal(nextUser?.id ?? null);
       let status = "本地档案，未上传";
       let enabled = false;
@@ -65,7 +66,7 @@ export function UserDataProvider({children}: {children:React.ReactNode}) {
   },[]);
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || sessionGeneration !== epoch.current || owner !== sessionOwner.current) return;
     try {localStorage.setItem(privateStorageKey(user?.id ?? null),JSON.stringify(data));}
     catch {queueMicrotask(()=>setCloudStatus("浏览器保存不可用；请导出备份或启用账号同步"));}
     const sb = getSupabase();
@@ -83,26 +84,30 @@ export function UserDataProvider({children}: {children:React.ReactNode}) {
       } catch {if (id === saveId.current) setCloudStatus("云端保存失败，保留本地副本");}
     },800);
     return () => {clearTimeout(timer);pendingSave.current++;};
-  },[data,loaded,user,consent,owner]);
+  },[data,loaded,user,consent,owner,sessionGeneration]);
 
   const update = useCallback((fn:(d:UserData)=>UserData)=>{
-    setData(prev=>normalizeUserData({...fn(prev),updatedAt:new Date().toISOString()}));
-  },[]);
+    if (!loaded || sessionGeneration !== epoch.current || owner !== sessionOwner.current) return;
+    setData(prev=>sessionGeneration === epoch.current && owner === sessionOwner.current
+      ? normalizeUserData({...fn(prev),updatedAt:new Date().toISOString()}) : prev);
+  },[loaded,owner,sessionGeneration]);
   const enableCloudSync = async()=>{
     const sb=getSupabase();
-    if (!sb || !user || owner !== user.id) return "请先登录并等待账号档案读取完成";
+    if (!sb || !user || !loaded || sessionGeneration !== epoch.current || owner !== user.id) return "请先登录并等待账号档案读取完成";
     const currentEpoch=epoch.current;
-    const {error}=await writes.current(user.id,async()=> await sb.from("career_profiles").upsert({user_id:user.id,data,updated_at:new Date().toISOString()}));
-    if (currentEpoch !== epoch.current) return "账号已改变，本次同步已结束";
+    const result=await writes.current(user.id,async()=> currentEpoch === epoch.current
+      ? await sb.from("career_profiles").upsert({user_id:user.id,data,updated_at:new Date().toISOString()}) : null);
+    if (!result || currentEpoch !== epoch.current) return "账号已改变，本次同步已结束";
+    const {error}=result;
     if (error) return "同步失败；请先执行新版数据库结构，数据仍保留本地";
     setConsent(true);setCloudStatus("账号私有档案已同步");return "已按你的授权保存至账号私有档案";
   };
   const signOut=async()=>{
     const sb=getSupabase();
-    epoch.current++;saveId.current++;sessionOwner.current=null;setConsent(false);setOwner(null);setUser(null);setData(readLocal(null));setLoaded(true);setCloudStatus("已退出，当前显示游客本地档案");
+    epoch.current++;saveId.current++;sessionOwner.current=null;setSessionGeneration(epoch.current);setConsent(false);setOwner(null);setUser(null);setData(readLocal(null));setLoaded(true);setCloudStatus("已退出，当前显示游客本地档案");
     await sb?.auth.signOut();
   };
-  return <Context.Provider value={{data,update,loaded,user,consent,cloudStatus,enableCloudSync,signOut}}>{children}</Context.Provider>;
+  return <Context.Provider value={{data,update,loaded,user,consent,cloudStatus,sessionGeneration,enableCloudSync,signOut}}>{children}</Context.Provider>;
 }
 export function useUserData() {
   const context=useContext(Context);

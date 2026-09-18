@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, MotionConfig } from "framer-motion";
 import { useUserData } from "@/lib/store";
 import WorkspaceContext from "@/components/WorkspaceContext";
@@ -11,7 +11,16 @@ import { useCareerCatalog } from "@/components/CareerProvider";
 import { careerAdvice } from "@/lib/career/engine";
 
 export default function ProfilePage() {
-  const { data, update, cloudStatus, loaded } = useUserData();
+  const { loaded, sessionGeneration } = useUserData();
+  if (!loaded)
+    return (
+      <div className="p-10 text-center text-slate-400 font-bold">加载中…</div>
+    );
+  return <ProfileEditor key={sessionGeneration} />;
+}
+
+function ProfileEditor() {
+  const { data, update, cloudStatus } = useUserData();
   const { query, catalog, workspace } = useCareerCatalog();
   const upload = useRef<HTMLInputElement>(null);
   const [parsing, setParsing] = useState(false);
@@ -19,11 +28,11 @@ export default function ProfilePage() {
   const [resumeMsg, setResumeMsg] = useState("");
   const [applied, setApplied] = useState(false);
   const [newSkill, setNewSkill] = useState("");
-
-  if (!loaded)
-    return (
-      <div className="p-10 text-center text-slate-400 font-bold">加载中…</div>
-    );
+  const active = useRef(true);
+  useEffect(() => {
+    active.current = true;
+    return () => { active.current = false; };
+  }, []);
 
   const p = data.profile;
   const setP = (patch: Partial<typeof p>) => {
@@ -36,7 +45,8 @@ export default function ProfilePage() {
     arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const input = e.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     setParsing(true);
     setResumeMsg("");
@@ -44,6 +54,7 @@ export default function ProfilePage() {
     setApplied(false);
     try {
       const text = await extractText(file);
+      if (!active.current) return;
       const r = analyzeResume(text);
       setResumeResult(r);
       const found =
@@ -56,16 +67,17 @@ export default function ProfilePage() {
           : "没有识别到有效信息，可以换个格式试试（纯文本 PDF 效果最好）",
       );
     } catch (err) {
+      if (!active.current) return;
       setResumeMsg(
         err instanceof Error ? err.message : "解析失败，换个文件试试",
       );
     }
     setParsing(false);
-    e.target.value = "";
+    input.value = "";
   };
 
   const applyResume = () => {
-    if (!resumeResult) return;
+    if (!active.current || !resumeResult) return;
     setP({
       phone: resumeResult.phone ?? p.phone,
       email: resumeResult.email ?? p.email,

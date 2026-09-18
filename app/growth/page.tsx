@@ -5,7 +5,7 @@ import WorkspaceContext from "@/components/WorkspaceContext";
 import { useUserData } from "@/lib/store";
 export default function GrowthPage() {
   const { workspace, query, profile } = useCareerCatalog();
-  const { data, update } = useUserData();
+  const { data, update, loaded } = useUserData();
   return (
     <div className="workspace reading-width">
       <WorkspaceContext />
@@ -27,6 +27,7 @@ export default function GrowthPage() {
                   <label>
                     <input
                       type="checkbox"
+                      disabled={!loaded}
                       checked={data.taskDone.includes(key)}
                       onChange={() =>
                         update((d) => ({

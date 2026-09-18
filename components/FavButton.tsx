@@ -11,11 +11,12 @@ export default function FavButton({
   companyName?: string;
   size?: "sm" | "md";
 }) {
-  const { data, update } = useUserData();
-  const fav = data.favorites.includes(companyId);
+  const { data, update, loaded } = useUserData();
+  const fav = loaded && data.favorites.includes(companyId);
   const cls = size === "sm" ? "w-11 h-11 text-sm" : "w-11 h-11 text-base";
   return (
     <button
+      disabled={!loaded}
       aria-label={`${fav ? "取消收藏" : "收藏"}${companyName}`}
       aria-pressed={fav}
       onClick={(e) => {

@@ -3,7 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { useCareerCatalog } from "./CareerProvider";
 import { yearLabel } from "@/lib/career/onboarding";
 import { trapDialogFocus } from "./OnboardingGuide";
+import { useUserData } from "@/lib/store";
 export default function LetterWidget() {
+  const { profile } = useCareerCatalog();
+  const { sessionGeneration } = useUserData();
+  if (!profile) return null;
+  return <LetterDialog key={sessionGeneration} />;
+}
+
+function LetterDialog() {
   const { profile, workspace } = useCareerCatalog();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDialogElement>(null);
