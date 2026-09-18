@@ -43,6 +43,8 @@ node scripts/research-smoke.cjs
 
 上述发布工具默认只在本地校验，不写云端。联网检查加 --live 才会使用检索积分。
 
+可选账号切换浏览器回归：在 artifacts/browser-runtime 单独安装 Playwright 后运行 node tests/owner-lifecycle.cjs。此脚本使用本机 Windows Chrome、真实组件与受控模拟账号，不需要真实账号或收费检索；不包含在 npm test 的56项单元检查中，也不替代线上数据库权限测试。
+
 **本版需要Next服务器运行，不再是GitHub Pages静态导出。** 可使用支持Next运行时的平台或Node服务器：npm run build 后 npm start。原版 deploy/publish 脚本面向旧静态版本，不要用于本版。本任务没有发布公网，没有替你执行数据库迁移或创建用户账号。
 
 ## 简历与隐私
