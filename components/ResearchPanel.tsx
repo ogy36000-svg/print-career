@@ -5,6 +5,10 @@ import { getSupabase } from "@/lib/supabase";
 import { validateResearchBundle } from "@/lib/career/research";
 import type { ResearchBundle, ResearchTopic } from "@/lib/career/types";
 import { useCareerCatalog } from "./CareerProvider";
+import {
+  settleResearchRequest,
+  type ResearchRequestStatus,
+} from "@/lib/career/request-status";
 const topics: { id: ResearchTopic; label: string }[] = [
   { id: "internship", label: "实习与招聘" },
   { id: "career", label: "行业与职业" },
@@ -24,27 +28,34 @@ export default function ResearchPanel({
     signature: string;
     bundle: ResearchBundle;
   } | null>(null);
-  const [status, setStatus] = useState({
+  const [status, setStatus] = useState<ResearchRequestStatus>({
     signature: "",
     busy: false,
     message: "",
+    request: null,
   });
   const controller = useRef<AbortController | null>(null);
   const signature = JSON.stringify([query.major, company, topic]);
   const current = result?.signature === signature ? result.bundle : null;
   useEffect(() => {
     const requests = controller;
-    return () => requests.current?.abort();
+    return () => {
+      const cancelled = requests.current;
+      if (!cancelled) return;
+      cancelled.abort();
+      setStatus((current) => settleResearchRequest(current, cancelled));
+    };
   }, [signature]);
   const research = async () => {
     controller.current?.abort();
     const abort = new AbortController();
     controller.current = abort;
     const target = signature;
-    setStatus({ signature: target, busy: true, message: "" });
+    setStatus({ signature: target, busy: true, message: "", request: abort });
     try {
       const sb = getSupabase();
       const session = sb ? (await sb.auth.getSession()).data.session : null;
+      abort.signal.throwIfAborted();
       const response = await fetch("/api/research/", {
         method: "POST",
         headers: {
@@ -69,13 +80,17 @@ export default function ResearchPanel({
       if (!abort.signal.aborted) setResult({ signature: target, bundle });
     } catch (error) {
       if (!abort.signal.aborted)
-        setStatus({
-          signature: target,
-          busy: false,
-          message: error instanceof Error ? error.message : "查询暂时不可用。",
-        });
+        setStatus((current) =>
+          current.request === abort
+            ? {
+                ...current,
+                message:
+                  error instanceof Error ? error.message : "查询暂时不可用。",
+              }
+            : current,
+        );
     } finally {
-      if (!abort.signal.aborted) setStatus((s) => ({ ...s, busy: false }));
+      setStatus((current) => settleResearchRequest(current, abort));
     }
   };
   const busy = status.signature === signature && status.busy;

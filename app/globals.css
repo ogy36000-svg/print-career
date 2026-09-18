@@ -251,7 +251,7 @@ dialog::backdrop { background:#17231ccc; backdrop-filter:blur(9px); }
 .letter-paper h2 { font-family:Georgia,'Songti SC',serif; font-size:27px; margin:25px 0; }
 .letter-paper p { font-size:14px; line-height:2.1; margin:18px 0; }
 .letter-paper .letter-signature { text-align:right; }
-.map-container { width:100%; border-radius:12px; overflow:hidden; border:1px solid #dfe4d6; }
+.map-container { width:100%; border-radius:12px; overflow:hidden; border:1px solid #dfe4d6; background:#eaf0ec; }
 .map-point { display:block; width:14px; height:14px; background:#6f865d; border:3px solid white; box-shadow:0 1px 7px #26341d55; border-radius:50%; }
 .map-point.selected { background:#bb7045; width:20px; height:20px; }
 .location-list { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }

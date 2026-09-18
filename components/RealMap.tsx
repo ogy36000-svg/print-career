@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import type { Company } from "@/lib/types";
 import ChinaMap from "./ChinaMap";
 import "leaflet/dist/leaflet.css";
+import land from "@/data/world-land.json";
+import type { GeoJsonObject } from "geojson";
 interface RealMapProps {
   companies: Company[];
   onSelect?: (company: Company) => void;
@@ -33,6 +35,7 @@ export default function RealMap({
   height = 520,
 }: RealMapProps) {
   const container = useRef<HTMLDivElement>(null);
+  const activeMap = useRef<import("leaflet").Map | null>(null);
   const [status, setStatus] = useState("");
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -54,6 +57,25 @@ export default function RealMap({
           fadeAnimation: !reduced,
           markerZoomAnimation: !reduced,
         });
+        activeMap.current = map;
+        setFailed(false);
+        // Bundled WGS84 land keeps geographic context usable without a tile network.
+        const basePane = map.createPane("basic-land");
+        basePane.style.zIndex = "150";
+        basePane.style.pointerEvents = "none";
+        L.geoJSON(land as unknown as GeoJsonObject, {
+          pane: "basic-land",
+          interactive: false,
+          style: {
+            color: "#a9b49e",
+            weight: 0.7,
+            fillColor: "#dfe5d2",
+            fillOpacity: 1,
+          },
+          attribution:
+            '<a href="https://www.naturalearthdata.com/about/terms-of-use/">Natural Earth</a>',
+        }).addTo(map);
+        setStatus("基础地图已显示，正在读取在线地图。");
         const tiles = L.tileLayer(TILE_URL, {
           maxZoom: 12,
           attribution:
@@ -61,13 +83,13 @@ export default function RealMap({
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         });
         let loaded = 0;
+        timer = setTimeout(() => {
+          if (!disposed && !loaded)
+            setStatus("在线地图暂未加载，基础地图与地点列表仍可使用。");
+        }, 20000);
         tiles.on("tileerror", () => {
           if (disposed) return;
-          setStatus("部分地图暂未加载，可以继续查看下方地点列表。");
-          if (!loaded && !timer)
-            timer = setTimeout(() => {
-              if (!disposed && !loaded) setFailed(true);
-            }, 20000);
+          setStatus("部分在线地图暂未加载，基础地图与地点列表仍可使用。");
         });
         tiles.on("tileload", () => {
           loaded++;
@@ -129,14 +151,19 @@ export default function RealMap({
       observer?.disconnect();
       map?.off();
       map?.remove();
+      if (activeMap.current === map) activeMap.current = null;
     };
   }, [view, companies, selectedId, onSelect, extraMarkers, arcs]);
   return (
     <section>
-      <p className="fine-print mb-3">城市级位置参考 · 实际工作地点见岗位公告</p>
+      <p className="fine-print mb-3">城市与地区参考 · 实际工作地点见岗位公告</p>
       <div
         ref={container}
-        style={{ height, display: failed ? "none" : undefined }}
+        style={{
+          height,
+          backgroundColor: "#eaf0ec",
+          display: failed ? "none" : undefined,
+        }}
         className="map-container"
         aria-label={view === "world" ? "世界地区地图" : "中国城市地图"}
       />
@@ -165,7 +192,21 @@ export default function RealMap({
         ))}
         {extraMarkers.map((m, i) => (
           <li key={`${m.name}-${i}`}>
-            <button onClick={m.onClick}>{m.name}</button>
+            <button
+              onClick={() => {
+                activeMap.current?.setView(
+                  [m.lat, m.lng],
+                  Math.max(activeMap.current.getZoom(), 4),
+                  {
+                    animate: !matchMedia("(prefers-reduced-motion: reduce)")
+                      .matches,
+                  },
+                );
+                m.onClick?.();
+              }}
+            >
+              {m.name}
+            </button>
           </li>
         ))}
       </ul>

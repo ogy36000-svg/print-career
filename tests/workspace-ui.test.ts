@@ -6,6 +6,10 @@ import type { OpportunityResponse, ResearchLead } from "../lib/career/types";
 import { opportunityRegions } from "../lib/career/regions";
 import { curatedOpportunities } from "../lib/career/opportunities";
 import {
+  settleResearchRequest,
+  type ResearchRequestStatus,
+} from "../lib/career/request-status";
+import {
   validateSelection,
   selectionKey,
   readSelection,
@@ -192,4 +196,57 @@ test("industry retains the interactive world map as secondary source context", (
   assert.ok(source.includes("<RealMap"));
   assert.ok(source.includes('view="world"'));
   assert.ok(source.includes("opportunityRegions"));
+});
+test("cancelled A search can be revisited without busy state and cannot settle newer requests", () => {
+  const cancelled = new AbortController();
+  let status: ResearchRequestStatus = {
+    signature: "A",
+    busy: true,
+    message: "",
+    request: cancelled,
+  };
+  cancelled.abort();
+  status = settleResearchRequest(status, cancelled);
+  assert.equal(status.signature === "A" && status.busy, false);
+  const newer = new AbortController();
+  status = { ...status, busy: true, request: newer };
+  assert.equal(settleResearchRequest(status, cancelled), status);
+  assert.equal(settleResearchRequest(status, newer).busy, false);
+  const panel = readFileSync("components/ResearchPanel.tsx", "utf8");
+  assert.ok(panel.includes("settleResearchRequest"));
+});
+test("map geographic fallback is local WGS84 land below online tiles and remains visible", () => {
+  assert.ok(existsSync("data/world-land.json"));
+  const land = JSON.parse(readFileSync("data/world-land.json", "utf8"));
+  assert.equal(land.type, "FeatureCollection");
+  assert.equal(land.features.length, 127);
+  const points = land.features.flatMap(
+    (feature: { geometry: { type: string; coordinates: number[][][] } }) => {
+      assert.equal(feature.geometry.type, "Polygon");
+      return feature.geometry.coordinates.flat();
+    },
+  );
+  assert.ok(points.length > 5000);
+  assert.ok(
+    points.every(
+      ([lng, lat]: number[]) =>
+        Number.isFinite(lng) &&
+        Math.abs(lng) <= 180 &&
+        Number.isFinite(lat) &&
+        Math.abs(lat) <= 90,
+    ),
+  );
+  const map = readFileSync("components/RealMap.tsx", "utf8");
+  assert.ok(map.includes("L.geoJSON"));
+  assert.ok(map.includes('createPane("basic-land")'));
+  assert.ok(map.includes('zIndex = "150"'));
+  assert.ok(map.includes("naturalearthdata.com"));
+  assert.ok(!map.includes("setFailed(true);\n            }, 20000)"));
+});
+test("profile animation honors reduced motion preference", () => {
+  assert.ok(
+    readFileSync("app/profile/page.tsx", "utf8").includes(
+      'reducedMotion="user"',
+    ),
+  );
 });
