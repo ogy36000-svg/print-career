@@ -48,3 +48,4 @@ secrets.local.txt
 .firecrawl/
 artifacts/
 .tool-build/
+.superpowers/
