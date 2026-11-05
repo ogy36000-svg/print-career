@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+node_modules
+.next
+out
+.firecrawl
+.superpowers
+.test-build
+.tool-build
+artifacts
+*.log
+*.tsbuildinfo
+secrets.local.txt
