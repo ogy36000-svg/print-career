@@ -9,6 +9,7 @@ out
 .test-build
 .tool-build
 artifacts
+.runtime
 *.log
 *.tsbuildinfo
 secrets.local.txt
